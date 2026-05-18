@@ -1,0 +1,94 @@
+{
+  "parties": [
+    {
+      "name": "Meridian Health Systems, Inc.",
+      "role": "Client",
+      "evidence_quote": "Meridian Health Systems, Inc., a New York corporation",
+      "evidence_page": 1,
+      "confidence": 0.9423076923076923,
+      "verified_page": 1,
+      "match_quality": "fuzzy"
+    },
+    {
+      "name": "Atlas Strategic Advisors LLC",
+      "role": "Provider",
+      "evidence_quote": "Atlas Strategic Advisors LLC, a New York limited liability company",
+      "evidence_page": 1,
+      "confidence": 0.9692307692307692,
+      "verified_page": 1,
+      "match_quality": "fuzzy"
+    }
+  ],
+  "effective_date": {
+    "value": "2026-01-01",
+    "evidence_quote": "January 1, 2026",
+    "evidence_page": 1,
+    "confidence": 1,
+    "verified_page": 1,
+    "match_quality": "exact"
+  },
+  "term": {
+    "value": "12 months initial, auto-renewing for successive 12-month terms; non-renewal requires 60 days' notice",
+    "evidence_quote": "The initial term of this Agreement is twelve (12) months from the Effective Date. Thereafter, the Agreement shall automatically renew for successive twelve (12) month terms",
+    "evidence_page": 1,
+    "confidence": 1,
+    "verified_page": 1,
+    "match_quality": "normalized"
+  },
+  "payment_terms": {
+    "value": "USD $250/hour unless an SOW specifies otherwise; monthly invoicing net 30; 1.5%/month late interest",
+    "evidence_quote": "billed at the rate of two hundred fifty U.S. dollars (USD $250.00) per hour",
+    "evidence_page": 1,
+    "confidence": 1,
+    "verified_page": 1,
+    "match_quality": "normalized"
+  },
+  "deliverables": {
+    "value": "Consulting services per individual SOWs issued under this Agreement",
+    "evidence_quote": "Provider shall perform consulting services for Client as described in one or more Statements of Work",
+    "evidence_page": 1,
+    "confidence": 1,
+    "verified_page": 1,
+    "match_quality": "exact"
+  },
+  "ip_ownership": {
+    "value": "Client owns SOW Deliverables (subject to payment); Provider retains pre-existing Provider Tools and grants Client a perpetual, non-exclusive license to use them with the Deliverables",
+    "evidence_quote": "Client shall own all right, title, and interest in and to the deliverables specifically produced for Client under an SOW",
+    "evidence_page": 1,
+    "confidence": 1,
+    "verified_page": 1,
+    "match_quality": "normalized"
+  },
+  "termination_clause": {
+    "value": "30 days' notice for convenience; immediate for uncured material breach (15-day cure) or insolvency",
+    "evidence_quote": "Either Party may terminate this Agreement or any individual SOW for convenience upon thirty (30) days' prior written notice",
+    "evidence_page": 2,
+    "confidence": 1,
+    "verified_page": 2,
+    "match_quality": "normalized"
+  },
+  "governing_law": {
+    "value": "New York",
+    "evidence_quote": "laws of the State of New York, without regard to its conflict of laws principles",
+    "evidence_page": 2,
+    "confidence": 1,
+    "verified_page": 2,
+    "match_quality": "normalized"
+  },
+  "kill_fee": {
+    "value": null,
+    "evidence_quote": null,
+    "evidence_page": null,
+    "confidence": 1,
+    "verified_page": null,
+    "match_quality": "null-field"
+  },
+  "limitation_of_liability": {
+    "value": "Capped at fees paid in trailing 12 months (except for confidentiality/indemnification breaches); no indirect/consequential damages",
+    "evidence_quote": "aggregate liability arising out of or in connection with this agreement shall not exceed the total fees paid by client to provider in the twelve (12) months preceding the claim",
+    "evidence_page": 2,
+    "confidence": 1,
+    "verified_page": 2,
+    "match_quality": "normalized"
+  }
+}

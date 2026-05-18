@@ -1,0 +1,79 @@
+/* Print stylesheet shared by every sample contract. Loaded inline by the
+   build script so the rendered PDF doesn't need an external fetch. */
+@page {
+  size: letter;
+  margin: 1in 1in 1in 1in;
+}
+
+body {
+  font-family: 'Times New Roman', Georgia, serif;
+  font-size: 11pt;
+  line-height: 1.45;
+  color: #111;
+}
+
+.sample-banner {
+  background: #fff3cd;
+  border: 1px solid #ffeaa7;
+  padding: 8px 12px;
+  font-family: -apple-system, 'Segoe UI', sans-serif;
+  font-size: 9pt;
+  color: #6b5b0f;
+  margin: 0 0 24px 0;
+  text-align: center;
+}
+
+h1 {
+  font-size: 14pt;
+  text-align: center;
+  margin: 0 0 6pt 0;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+h1 + p.subtitle {
+  text-align: center;
+  font-style: italic;
+  margin: 0 0 24pt 0;
+}
+
+h2 {
+  font-size: 11pt;
+  font-weight: bold;
+  margin: 14pt 0 4pt 0;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+p {
+  margin: 6pt 0;
+  text-align: justify;
+}
+
+ol,
+ul {
+  margin: 4pt 0;
+  padding-left: 20pt;
+}
+
+li {
+  margin: 4pt 0;
+}
+
+.signature-block {
+  margin-top: 36pt;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24pt;
+}
+
+.signature-block .sig {
+  border-top: 1px solid #333;
+  padding-top: 4pt;
+  font-size: 9pt;
+}
+
+.recital {
+  margin: 6pt 0;
+  text-align: justify;
+}

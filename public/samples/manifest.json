@@ -1,0 +1,40 @@
+{
+  "samples": [
+    {
+      "id": "mutual-nda",
+      "title": "Mutual NDA",
+      "subtitle": "Acme Robotics · Globex Partners",
+      "blurb": "Short bilateral NDA. Showcases handling of fields that don't apply to the document type (payment terms, deliverables, kill fee → gray 'not in contract').",
+      "page_count": 2,
+      "pdf_path": "/samples/mutual-nda.pdf",
+      "json_path": "/samples/mutual-nda.json"
+    },
+    {
+      "id": "fixed-fee-sow",
+      "title": "Fixed-fee SOW",
+      "subtitle": "Data pipeline migration · USD $42,000",
+      "blurb": "Statement of Work with detailed payment terms and a kill fee clause. Includes one deliberately-mis-paginated field — verification catches it (amber 'wrong page' chip).",
+      "page_count": 2,
+      "pdf_path": "/samples/fixed-fee-sow.pdf",
+      "json_path": "/samples/fixed-fee-sow.json"
+    },
+    {
+      "id": "consulting-msa",
+      "title": "Consulting MSA",
+      "subtitle": "Meridian Health · Atlas Strategic Advisors",
+      "blurb": "Master Services Agreement framework with hourly billing, IP carve-outs for provider tooling, and a 12-month-look-back liability cap. All extracted fields verify clean.",
+      "page_count": 3,
+      "pdf_path": "/samples/consulting-msa.pdf",
+      "json_path": "/samples/consulting-msa.json"
+    },
+    {
+      "id": "contributor-license-agreement",
+      "title": "Contributor License Agreement",
+      "subtitle": "Individual · Open Beacon Foundation",
+      "blurb": "Open-source CLA. One field includes a deliberately-hallucinated quote so you can see verification catch it (red 'quote not found' chip + page-level warning banner).",
+      "page_count": 2,
+      "pdf_path": "/samples/contributor-license-agreement.pdf",
+      "json_path": "/samples/contributor-license-agreement.json"
+    }
+  ]
+}

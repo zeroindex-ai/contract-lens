@@ -1,0 +1,94 @@
+{
+  "parties": [
+    {
+      "name": "Acme Robotics, Inc.",
+      "role": "Mutual Party",
+      "evidence_quote": "Acme Robotics, Inc., a Delaware corporation",
+      "evidence_page": 1,
+      "confidence": 0.9285714285714286,
+      "verified_page": 1,
+      "match_quality": "fuzzy"
+    },
+    {
+      "name": "Globex Partners LLC",
+      "role": "Mutual Party",
+      "evidence_quote": "Globex Partners LLC, a Massachusetts limited liability company",
+      "evidence_page": 1,
+      "confidence": 0.9508196721311475,
+      "verified_page": 1,
+      "match_quality": "fuzzy"
+    }
+  ],
+  "effective_date": {
+    "value": "2026-06-01",
+    "evidence_quote": "June 1, 2026",
+    "evidence_page": 1,
+    "confidence": 1,
+    "verified_page": 1,
+    "match_quality": "exact"
+  },
+  "term": {
+    "value": "3 years from the Effective Date",
+    "evidence_quote": "three (3) years from the Effective Date",
+    "evidence_page": 1,
+    "confidence": 1,
+    "verified_page": 1,
+    "match_quality": "exact"
+  },
+  "payment_terms": {
+    "value": null,
+    "evidence_quote": null,
+    "evidence_page": null,
+    "confidence": 1,
+    "verified_page": null,
+    "match_quality": "null-field"
+  },
+  "deliverables": {
+    "value": null,
+    "evidence_quote": null,
+    "evidence_page": null,
+    "confidence": 1,
+    "verified_page": null,
+    "match_quality": "null-field"
+  },
+  "ip_ownership": {
+    "value": "Each party retains its own IP; no license granted by the Agreement",
+    "evidence_quote": "No license, by implication or otherwise, is granted to the Recipient under any patent, copyright, or other intellectual property right",
+    "evidence_page": 1,
+    "confidence": 1,
+    "verified_page": 1,
+    "match_quality": "normalized"
+  },
+  "termination_clause": {
+    "value": "Either party may terminate on 30 days' written notice; Confidential Information must be returned or destroyed",
+    "evidence_quote": "Either Party may terminate this Agreement upon thirty (30) days' written notice",
+    "evidence_page": 2,
+    "confidence": 1,
+    "verified_page": 2,
+    "match_quality": "normalized"
+  },
+  "governing_law": {
+    "value": "Delaware",
+    "evidence_quote": "laws of the State of Delaware, without regard to its conflict of laws principles",
+    "evidence_page": 2,
+    "confidence": 1,
+    "verified_page": 2,
+    "match_quality": "normalized"
+  },
+  "kill_fee": {
+    "value": null,
+    "evidence_quote": null,
+    "evidence_page": null,
+    "confidence": 1,
+    "verified_page": null,
+    "match_quality": "null-field"
+  },
+  "limitation_of_liability": {
+    "value": "Aggregate liability capped at USD $1,000; no indirect/consequential damages",
+    "evidence_quote": "aggregate liability under this Agreement shall not exceed one thousand U.S. dollars (USD $1,000)",
+    "evidence_page": 2,
+    "confidence": 1,
+    "verified_page": 2,
+    "match_quality": "normalized"
+  }
+}

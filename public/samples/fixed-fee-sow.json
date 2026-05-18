@@ -1,0 +1,94 @@
+{
+  "parties": [
+    {
+      "name": "Phoenix Industries Inc.",
+      "role": "Client",
+      "evidence_quote": "Phoenix Industries Inc., a Texas corporation",
+      "evidence_page": 1,
+      "confidence": 0.9534883720930233,
+      "verified_page": 1,
+      "match_quality": "fuzzy"
+    },
+    {
+      "name": "BlueRiver Consulting Group LLC",
+      "role": "Provider",
+      "evidence_quote": "BlueRiver Consulting Group LLC, a California limited liability company",
+      "evidence_page": 1,
+      "confidence": 0.9420289855072463,
+      "verified_page": 1,
+      "match_quality": "fuzzy"
+    }
+  ],
+  "effective_date": {
+    "value": "2026-04-15",
+    "evidence_quote": "April 15, 2026",
+    "evidence_page": 1,
+    "confidence": 1,
+    "verified_page": 1,
+    "match_quality": "exact"
+  },
+  "term": {
+    "value": "Effective Date through September 30, 2026",
+    "evidence_quote": "shall commence on the Effective Date and shall continue through September 30, 2026",
+    "evidence_page": 2,
+    "confidence": 0.4,
+    "verified_page": 1,
+    "match_quality": "wrong-page"
+  },
+  "payment_terms": {
+    "value": "Fixed fee USD $42,000 — three milestones ($10,000 / $16,000 / $16,000), net 30",
+    "evidence_quote": "fixed fee of forty-two thousand U.S. dollars (USD $42,000), payable as follows: $10,000 upon execution of this SOW; $16,000 upon completion of the Dagster cutover; and $16,000 upon completion of the operational handoff",
+    "evidence_page": 1,
+    "confidence": 0.9769585253456221,
+    "verified_page": 1,
+    "match_quality": "fuzzy"
+  },
+  "deliverables": {
+    "value": "(1) Airflow→Dagster pipeline migration with DAG conversions and historical backfill; (2) written runbook; (3) two-week operational handoff",
+    "evidence_quote": "Migration of Client's data pipeline from the legacy Airflow 1.x environment to a managed Dagster deployment, including all DAG conversions and historical-backfill orchestration",
+    "evidence_page": 1,
+    "confidence": 1,
+    "verified_page": 1,
+    "match_quality": "normalized"
+  },
+  "ip_ownership": {
+    "value": "Work for hire — all deliverables are exclusive property of Client; backstop assignment for non-WMFH portions",
+    "evidence_quote": "shall be considered \"work made for hire\" and shall be the exclusive property of Client",
+    "evidence_page": 1,
+    "confidence": 0.9529411764705882,
+    "verified_page": 1,
+    "match_quality": "fuzzy"
+  },
+  "termination_clause": {
+    "value": "14 days' written notice either party",
+    "evidence_quote": "Either Party may terminate this SOW upon fourteen (14) days' written notice",
+    "evidence_page": 2,
+    "confidence": 1,
+    "verified_page": 2,
+    "match_quality": "normalized"
+  },
+  "governing_law": {
+    "value": "California",
+    "evidence_quote": "laws of the State of California",
+    "evidence_page": 2,
+    "confidence": 1,
+    "verified_page": 2,
+    "match_quality": "exact"
+  },
+  "kill_fee": {
+    "value": "25% of unbilled fees on Client termination for convenience",
+    "evidence_quote": "kill fee equal to twenty-five percent (25%) of any unbilled fees remaining under this SOW",
+    "evidence_page": 2,
+    "confidence": 1,
+    "verified_page": 2,
+    "match_quality": "normalized"
+  },
+  "limitation_of_liability": {
+    "value": "Capped at total fees paid; no indirect/consequential damages",
+    "evidence_quote": "aggregate liability arising out of or in connection with this SOW shall not exceed the total fees paid by Client to Provider under this SOW",
+    "evidence_page": 2,
+    "confidence": 1,
+    "verified_page": 2,
+    "match_quality": "normalized"
+  }
+}
