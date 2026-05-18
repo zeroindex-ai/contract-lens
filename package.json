@@ -16,7 +16,7 @@
     "format:check": "prettier --check ."
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.40.0",
+    "@anthropic-ai/sdk": "^0.96.0",
     "@libsql/client": "^0.17.3",
     "next": "16.2.6",
     "pdfjs-dist": "^4.10.38",
