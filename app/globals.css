@@ -136,3 +136,393 @@ body {
   left: 12px;
   top: 12px;
 }
+
+/* ──────────────────────────────────────────────────────────────────────────
+   Lens-specific UI: confidence chips, field rows, viewer split, upload zone
+   ──────────────────────────────────────────────────────────────────────── */
+
+/* Confidence chip — a small pill next to each field title. Color encodes the
+   trust band; the number itself shows the score; hover reveals match_quality. */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  letter-spacing: 0.02em;
+}
+.chip-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  display: inline-block;
+}
+.chip-green {
+  background: rgba(22, 163, 74, 0.08);
+  color: var(--accent-go);
+  border-color: rgba(22, 163, 74, 0.22);
+}
+.chip-green .chip-dot {
+  background: var(--accent-go);
+}
+.chip-amber {
+  background: rgba(180, 83, 9, 0.08);
+  color: var(--warn);
+  border-color: rgba(180, 83, 9, 0.22);
+}
+.chip-amber .chip-dot {
+  background: var(--warn);
+}
+.chip-red {
+  background: rgba(190, 18, 60, 0.08);
+  color: var(--error);
+  border-color: rgba(190, 18, 60, 0.25);
+}
+.chip-red .chip-dot {
+  background: var(--error);
+}
+.chip-gray {
+  background: rgba(82, 82, 91, 0.06);
+  color: var(--muted);
+  border-color: rgba(82, 82, 91, 0.18);
+}
+.chip-gray .chip-dot {
+  background: var(--muted-2);
+}
+
+/* Field row — one extracted field, clickable to select. Selected row gets a
+   subtle accent border on the left. */
+.field-row {
+  position: relative;
+  padding: 14px 18px 14px 22px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.12s ease;
+  border: 1px solid transparent;
+}
+.field-row:hover {
+  background: var(--bg-soft);
+}
+.field-row.selected {
+  background: var(--bg-soft);
+  border-color: var(--line);
+}
+.field-row.selected::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 12px;
+  bottom: 12px;
+  width: 3px;
+  background: var(--accent-1);
+  border-radius: 2px;
+}
+.field-row .field-label {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.field-row .field-value {
+  margin-top: 4px;
+  color: var(--ink);
+  font-size: 14px;
+  line-height: 1.45;
+}
+.field-row .field-value.null {
+  color: var(--muted-2);
+  font-style: italic;
+}
+.field-row .field-meta {
+  margin-top: 6px;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  color: var(--muted-2);
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.field-row .party-pill {
+  display: inline-block;
+  font-size: 11px;
+  color: var(--muted);
+  margin-right: 8px;
+  padding: 1px 6px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+}
+
+/* Warning banner — appears when any field has confidence below the threshold. */
+.warning-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: rgba(180, 83, 9, 0.06);
+  border: 1px solid rgba(180, 83, 9, 0.25);
+  color: var(--warn);
+  padding: 14px 18px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-size: 13px;
+  line-height: 1.45;
+}
+.warning-banner .icon {
+  flex-shrink: 0;
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 1;
+  margin-top: 1px;
+}
+.warning-banner strong {
+  color: var(--warn);
+}
+
+/* The two-column viewer split. Stacks on small screens. */
+.viewer-split {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+  align-items: start;
+}
+@media (min-width: 900px) {
+  .viewer-split {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 4fr);
+  }
+}
+
+/* PDF preview card */
+.pdf-preview {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 18px 18px 16px;
+  position: sticky;
+  top: 88px;
+}
+.pdf-preview .page-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+.pdf-preview .page-bar .nav {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.pdf-preview .page-bar button {
+  background: transparent;
+  border: 1px solid var(--line);
+  color: var(--ink);
+  padding: 2px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: 1.4;
+  transition: border-color 0.12s ease;
+}
+.pdf-preview .page-bar button:hover:not(:disabled) {
+  border-color: var(--line-strong);
+}
+.pdf-preview .page-bar button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.pdf-canvas-wrap {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  overflow: hidden;
+  background: #fff;
+  display: flex;
+  justify-content: center;
+}
+.pdf-canvas-wrap canvas {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+.pdf-quote {
+  margin-top: 12px;
+  padding: 12px 14px;
+  background: var(--bg-soft);
+  border-left: 3px solid var(--accent-1);
+  border-radius: 4px;
+  font-family: 'Inter', sans-serif;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--ink);
+  white-space: pre-wrap;
+}
+.pdf-quote .quote-meta {
+  margin-top: 6px;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  color: var(--muted-2);
+}
+.pdf-preview .empty-state {
+  padding: 32px 16px;
+  text-align: center;
+  color: var(--muted-2);
+  font-size: 13px;
+}
+
+/* Sample picker grid */
+.sample-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+.sample-card {
+  text-align: left;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 16px 18px;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.06s ease;
+}
+.sample-card:hover {
+  border-color: var(--line-strong);
+  box-shadow: 0 6px 22px -16px rgba(124, 58, 237, 0.35);
+}
+.sample-card:active {
+  transform: translateY(1px);
+}
+.sample-card .sample-title {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--ink);
+}
+.sample-card .sample-subtitle {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  margin-top: 3px;
+}
+.sample-card .sample-blurb {
+  margin-top: 8px;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+/* Upload zone */
+.upload-zone {
+  border: 1.5px dashed var(--line-strong);
+  border-radius: 10px;
+  padding: 32px 24px;
+  text-align: center;
+  background: #fff;
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+.upload-zone.dragging {
+  border-color: var(--accent-1);
+  background: rgba(124, 58, 237, 0.04);
+}
+.upload-zone .upload-title {
+  font-size: 14px;
+  color: var(--ink);
+}
+.upload-zone .upload-meta {
+  margin-top: 6px;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  color: var(--muted-2);
+}
+.upload-zone input[type='file'] {
+  display: none;
+}
+
+/* Loading + error states */
+.error-state {
+  background: rgba(190, 18, 60, 0.06);
+  border: 1px solid rgba(190, 18, 60, 0.25);
+  color: var(--error);
+  padding: 14px 18px;
+  border-radius: 8px;
+  font-size: 13px;
+}
+.loading-state {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 22px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  font-size: 14px;
+  color: var(--muted);
+}
+.loading-state .spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--line);
+  border-top-color: var(--accent-1);
+  border-radius: 999px;
+  animation: lens-spin 0.7s linear infinite;
+}
+@keyframes lens-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  text-decoration: none;
+  background: none;
+  border: none;
+  padding: 4px 0;
+  cursor: pointer;
+  margin-bottom: 12px;
+}
+.back-link:hover {
+  color: var(--ink);
+}
+
+.metadata-footer {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
+  color: var(--muted-2);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+}
+.metadata-footer span strong {
+  color: var(--muted);
+  font-weight: 500;
+  margin-right: 4px;
+}

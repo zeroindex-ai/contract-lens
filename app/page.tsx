@@ -1,22 +1,15 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { DemoShell } from '@/ui/DemoShell';
+import type { SampleManifestEntry } from '@/ui/SamplePicker';
+
+/**
+ * Server component. Reads the samples manifest at build time and passes it
+ * to the client shell. All interactivity lives in DemoShell and below.
+ */
+
 export default function HomePage() {
-  return (
-    <>
-      <section className="pt-10 pb-8">
-        <div className="label mb-3">Lens</div>
-        <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Document intelligence — verified.</h1>
-        <p className="mt-4 muted text-base leading-relaxed max-w-5xl">
-          Upload a contract PDF or pick a sample. Every extracted field is matched back to the source page;
-          fields that can&rsquo;t be verified are flagged, not silently passed through.
-        </p>
-      </section>
-
-      <div className="grad-divider"></div>
-
-      <section className="pt-10 pb-24">
-        <div className="card">
-          <p className="muted">v0.1 scaffold &mdash; upload + sample + extraction UI lands in task #7.</p>
-        </div>
-      </section>
-    </>
-  );
+  const manifestPath = join(process.cwd(), 'public', 'samples', 'manifest.json');
+  const manifest = JSON.parse(readFileSync(manifestPath, 'utf-8')) as { samples: SampleManifestEntry[] };
+  return <DemoShell samples={manifest.samples} />;
 }
