@@ -27,8 +27,6 @@ export interface PdfPreviewProps {
   hint?: string | null;
 }
 
-const SCALE = 1.6;
-
 /* eslint-disable @typescript-eslint/no-explicit-any */
 let pdfjsPromise: Promise<any> | null = null;
 async function getPdfjs(): Promise<any> {
@@ -105,6 +103,7 @@ function highlightQuote(container: HTMLElement, quote: string): boolean {
 export function PdfPreview({ pdfUrl, page, quote, hint }: PdfPreviewProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const textLayerRef = useRef<HTMLDivElement | null>(null);
+  const stageRef = useRef<HTMLDivElement | null>(null);
   const [pageCount, setPageCount] = useState<number>(0);
   const [error, setError] = useState<string | null>(null);
 
@@ -135,28 +134,38 @@ export function PdfPreview({ pdfUrl, page, quote, hint }: PdfPreviewProps) {
         const pageObj = await doc.getPage(targetPage);
         if (cancelled) return;
 
-        const viewport = pageObj.getViewport({ scale: SCALE });
         const canvas = canvasRef.current;
         const textLayerDiv = textLayerRef.current;
-        if (!canvas || !textLayerDiv) return;
+        const stage = stageRef.current;
+        if (!canvas || !textLayerDiv || !stage) return;
 
-        // ── canvas (page image) ──
+        // ── scale to fit the container width ──
+        // The canvas and text layer MUST share one coordinate space, or the
+        // transparent text spans drift from the rendered glyphs and highlights
+        // land on blank areas. We render at the container's pixel width (not
+        // the PDF's natural width) so display size == text-layer size exactly.
+        const containerWidth = (stage.parentElement?.clientWidth ?? stage.clientWidth) || 480;
+        const unscaled = pageObj.getViewport({ scale: 1 });
+        const scale = containerWidth / unscaled.width;
+        const viewport = pageObj.getViewport({ scale });
+
+        // ── canvas (page image), backing store at DPR for crispness ──
         const dpr = window.devicePixelRatio || 1;
         canvas.width = Math.floor(viewport.width * dpr);
         canvas.height = Math.floor(viewport.height * dpr);
-        canvas.style.width = `${viewport.width}px`;
-        canvas.style.height = `${viewport.height}px`;
+        canvas.style.width = `${Math.floor(viewport.width)}px`;
+        canvas.style.height = `${Math.floor(viewport.height)}px`;
         const ctx = canvas.getContext('2d');
         if (!ctx) return;
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
         await pageObj.render({ canvasContext: ctx, viewport }).promise;
         if (cancelled) return;
 
-        // ── transparent text layer overlay ──
+        // ── transparent text layer overlay, same dimensions + scale ──
         textLayerDiv.innerHTML = '';
-        textLayerDiv.style.width = `${viewport.width}px`;
-        textLayerDiv.style.height = `${viewport.height}px`;
-        textLayerDiv.style.setProperty('--scale-factor', String(SCALE));
+        textLayerDiv.style.width = `${Math.floor(viewport.width)}px`;
+        textLayerDiv.style.height = `${Math.floor(viewport.height)}px`;
+        textLayerDiv.style.setProperty('--scale-factor', String(scale));
         const textContent = await pageObj.getTextContent();
         if (cancelled) return;
         const textLayer = new pdfjs.TextLayer({
@@ -209,7 +218,7 @@ export function PdfPreview({ pdfUrl, page, quote, hint }: PdfPreviewProps) {
         {hint && <span style={{ color: 'var(--warn)' }}>{hint}</span>}
       </div>
       <div className="pdf-canvas-wrap">
-        <div className="pdf-stage">
+        <div className="pdf-stage" ref={stageRef}>
           <canvas ref={canvasRef} aria-label={`PDF page ${shownPage} of ${pageCount}`} />
           <div className="textLayer" ref={textLayerRef} aria-hidden="true" />
         </div>

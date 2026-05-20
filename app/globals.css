@@ -505,21 +505,20 @@ body {
 .pdf-canvas-wrap {
   border: 1px solid var(--line);
   border-radius: 6px;
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-gutter: stable;
   background: #fff;
-  display: flex;
-  justify-content: center;
   max-height: 620px;
 }
-/* the stage holds canvas + text layer in the same coordinate space */
+/* the stage holds canvas + text layer in the same coordinate space; both are
+   sized in JS to the container width so glyphs and highlight spans align. */
 .pdf-stage {
   position: relative;
   line-height: 0;
 }
 .pdf-canvas-wrap canvas {
   display: block;
-  max-width: 100%;
-  height: auto;
 }
 /* pdfjs text layer — transparent overlay aligned to the canvas. Spans are
    absolutely positioned by pdfjs using the --scale-factor we set. */
@@ -541,15 +540,12 @@ body {
   transform-origin: 0% 0%;
   color: transparent;
 }
+/* Translucent yellow so the black canvas glyphs show straight through —
+   mix-blend-mode can't reach the canvas because the text layer is its own
+   stacking context (z-index), so we use alpha instead. */
 .textLayer span.hl {
-  background: var(--highlight, #fde68a);
+  background: rgba(250, 204, 21, 0.42);
   border-radius: 2px;
-  /* fatten the hit slightly so adjacent words read as one highlight */
-  padding: 0.5px 0;
-  mix-blend-mode: multiply;
-}
-:root {
-  --highlight: #fde68a;
 }
 .pdf-quote {
   margin-top: 12px;
