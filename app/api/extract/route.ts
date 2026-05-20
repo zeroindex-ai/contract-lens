@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import Anthropic from '@anthropic-ai/sdk';
 import { extract, ExtractionError } from '@/lib/extract';
 import { verify } from '@/lib/verify';
 import { extractPdfText } from '@/lib/pdf-text';
@@ -133,10 +134,21 @@ export async function POST(req: Request): Promise<NextResponse> {
       logExtract({ pageCount, outcome: 'extract_failed' });
       return errorResponse(502, err.code, err.message);
     }
-    // Unknown failure — log and return generic 500. Trace event still fires
-    // so the admin dashboard sees the rate of unknown errors.
+    // Anthropic SDK errors (billing, auth, rate limit, overload, network) are
+    // OUR infrastructure problems, not the visitor's. Never leak the raw API
+    // message — log it server-side, return a clean generic 503.
+    if (err instanceof Anthropic.APIError) {
+      console.error('[contract-lens] Anthropic API error:', err.status, err.message);
+      logExtract({ pageCount, outcome: 'extract_failed' });
+      return errorResponse(
+        503,
+        'SERVICE_UNAVAILABLE',
+        'The extraction service is temporarily unavailable. Please try again later.'
+      );
+    }
+    // Unknown failure — log the real error, return a clean generic 500.
     console.error('[contract-lens] /api/extract:', err);
     logExtract({ pageCount, outcome: 'extract_failed' });
-    return errorResponse(500, 'INTERNAL', err instanceof Error ? err.message : 'Unknown error');
+    return errorResponse(500, 'INTERNAL', 'Something went wrong during extraction. Please try again.');
   }
 }
