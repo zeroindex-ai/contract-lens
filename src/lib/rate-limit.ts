@@ -12,7 +12,14 @@ import type { Client } from '@libsql/client';
  * — no eviction job needed; old rows just sit there until manual cleanup.
  */
 
+/** Default daily cap. Override per-environment with RATE_LIMIT_PER_DAY
+ *  (e.g. a high value locally for testing, 5 in production). */
 export const DAILY_LIMIT = 5;
+
+function effectiveDailyLimit(): number {
+  const fromEnv = Number(process.env.RATE_LIMIT_PER_DAY);
+  return Number.isFinite(fromEnv) && fromEnv > 0 ? fromEnv : DAILY_LIMIT;
+}
 
 export interface RateLimitResult {
   allowed: boolean;
@@ -66,8 +73,9 @@ export async function checkAndIncrement(
   });
 
   const currentCount = before.rows[0] ? Number(before.rows[0].count) : 0;
+  const limit = effectiveDailyLimit();
 
-  if (currentCount >= DAILY_LIMIT) {
+  if (currentCount >= limit) {
     return {
       allowed: false,
       remaining: 0,
@@ -85,7 +93,7 @@ export async function checkAndIncrement(
 
   return {
     allowed: true,
-    remaining: DAILY_LIMIT - (currentCount + 1),
+    remaining: limit - (currentCount + 1),
     resetsAtUtc: nextUtcMidnight(now),
   };
 }
