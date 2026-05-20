@@ -136,7 +136,7 @@ export function ExtractionViewer({
       <WarningBanner verified={extraction} />
 
       <div className="viewer-split">
-        <div>
+        <div className="citations-pane">
           {FIELD_GROUPS.map((g) => (
             <div className="field-group" key={g.title}>
               <div className="group-title">{g.title}</div>

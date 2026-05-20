@@ -454,9 +454,51 @@ body {
   gap: 24px;
   align-items: start;
 }
+/* Desktop master-detail: both panes share ONE height (var --pane-h) and pin
+   at the same sticky top, so they're exactly aligned and equal-height. Each
+   scrolls internally — scrolling the field list scrolls only that pane; the
+   window barely moves and the PDF viewer stays put. */
 @media (min-width: 900px) {
   .viewer-split {
+    --pane-h: min(790px, calc(100vh - 110px));
     grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+    align-items: start;
+  }
+
+  .citations-pane {
+    height: var(--pane-h);
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: var(--line-strong) transparent;
+    scrollbar-gutter: stable;
+    padding: 0 8px;
+  }
+  /* webkit overlay-style scrollbar — subtle, appears on scroll/hover */
+  .citations-pane::-webkit-scrollbar {
+    width: 8px;
+  }
+  .citations-pane::-webkit-scrollbar-thumb {
+    background: var(--line);
+    border-radius: 999px;
+  }
+  .citations-pane:hover::-webkit-scrollbar-thumb {
+    background: var(--line-strong);
+  }
+  .citations-pane::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  /* PDF panel matches the pane height exactly; the canvas-wrap flexes to fill
+     the space between the page bar and the quote footer. */
+  .pdf-preview {
+    height: var(--pane-h);
+    display: flex;
+    flex-direction: column;
+  }
+  .pdf-canvas-wrap {
+    flex: 1;
+    max-height: none;
   }
 }
 
@@ -466,8 +508,6 @@ body {
   border: 1px solid var(--line);
   border-radius: 10px;
   padding: 18px 18px 16px;
-  position: sticky;
-  top: 88px;
 }
 .pdf-preview .page-bar {
   display: flex;
