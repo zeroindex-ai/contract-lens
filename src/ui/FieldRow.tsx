@@ -15,45 +15,47 @@ export interface FieldRowProps {
   onSelect: () => void;
 }
 
+function FieldFoot({ field }: { field: VerifiedField }) {
+  if (field.match_quality === 'null-field') return null;
+  return (
+    <div className="field-foot">
+      {field.match_quality === 'wrong-page' && field.verified_page !== null ? (
+        <>
+          <span>claimed p. {field.evidence_page}</span>
+          <span className="foot-warn">&rarr; found on p. {field.verified_page}</span>
+        </>
+      ) : field.match_quality === 'not-found' ? (
+        <>
+          <span>cited p. {field.evidence_page}</span>
+          <span className="foot-error">quote not found in PDF</span>
+        </>
+      ) : field.match_quality === 'incomplete' ? (
+        <span className="foot-warn">incomplete extraction</span>
+      ) : (
+        <span>p. {field.evidence_page}</span>
+      )}
+    </div>
+  );
+}
+
 export function FieldRow({ fieldKey, field, selected, onSelect }: FieldRowProps) {
   const isNullField = field.match_quality === 'null-field';
-  const valueDisplay = isNullField ? 'Not in this contract' : field.value ?? '—';
-
   return (
-    <button
-      type="button"
-      className={`field-row ${selected ? 'selected' : ''}`}
-      onClick={onSelect}
-      // Make the whole row work as a button without losing left-alignment.
-      style={{ display: 'block', width: '100%', textAlign: 'left', background: 'none', fontFamily: 'inherit' }}
-    >
-      <div className="flex justify-between items-start gap-3">
-        <span className="field-label">{FIELD_LABELS[fieldKey]}</span>
+    <button type="button" className={`field-row ${selected ? 'active' : ''}`} onClick={onSelect}>
+      <div className="field-head">
+        <span className="field-name">{FIELD_LABELS[fieldKey]}</span>
         <ConfidenceChip confidence={field.confidence} matchQuality={field.match_quality} />
       </div>
-      <div className={`field-value ${isNullField ? 'null' : ''}`}>{valueDisplay}</div>
-      {!isNullField && field.evidence_page !== null && (
-        <div className="field-meta">
-          <span>p. {field.evidence_page}</span>
-          {field.match_quality === 'wrong-page' && field.verified_page !== null && (
-            <span style={{ color: 'var(--warn)' }}>
-              → found on p. {field.verified_page}
-            </span>
-          )}
-          {field.match_quality === 'not-found' && (
-            <span style={{ color: 'var(--error)' }}>quote not found in PDF</span>
-          )}
-          {field.match_quality === 'incomplete' && (
-            <span style={{ color: 'var(--warn)' }}>incomplete extraction</span>
-          )}
-        </div>
-      )}
+      <div className={`field-value ${isNullField ? 'null' : ''}`}>
+        {isNullField ? 'Not in this contract' : (field.value ?? '—')}
+      </div>
+      <FieldFoot field={field} />
     </button>
   );
 }
 
 /* -------------------------------------------------------------------------- */
-/* Parties row — special case because it's an array of objects                */
+/* Parties row — array of objects                                             */
 /* -------------------------------------------------------------------------- */
 
 export interface PartiesRowProps {
@@ -66,51 +68,44 @@ export function PartiesRow({ parties, selectedIndex, onSelect }: PartiesRowProps
   if (parties.length === 0) {
     return (
       <div className="field-row" style={{ cursor: 'default' }}>
-        <div className="field-label">{FIELD_LABELS.parties}</div>
         <div className="field-value null">No parties identified</div>
       </div>
     );
   }
 
   return (
-    <div>
-      <div className="field-label" style={{ padding: '14px 18px 4px 22px' }}>
-        {FIELD_LABELS.parties}
-      </div>
+    <>
       {parties.map((p, i) => (
         <button
           key={`${p.name}-${i}`}
           type="button"
-          className={`field-row ${selectedIndex === i ? 'selected' : ''}`}
+          className={`field-row ${selectedIndex === i ? 'active' : ''}`}
           onClick={() => onSelect(i)}
-          style={{
-            display: 'block',
-            width: '100%',
-            textAlign: 'left',
-            background: 'none',
-            fontFamily: 'inherit',
-          }}
         >
-          <div className="flex justify-between items-start gap-3">
-            <div>
-              <span className="party-pill">{p.role}</span>
-              <span className="field-value" style={{ display: 'inline', marginTop: 0 }}>
-                {p.name}
-              </span>
-            </div>
+          <div className="field-head">
+            <span>
+              <span className="party-role">{p.role}</span>
+              <span className="field-value-inline">{p.name}</span>
+            </span>
             <ConfidenceChip confidence={p.confidence} matchQuality={p.match_quality} />
           </div>
-          <div className="field-meta">
-            <span>p. {p.evidence_page}</span>
-            {p.match_quality === 'wrong-page' && p.verified_page !== null && (
-              <span style={{ color: 'var(--warn)' }}>→ found on p. {p.verified_page}</span>
-            )}
-            {p.match_quality === 'not-found' && (
-              <span style={{ color: 'var(--error)' }}>quote not found in PDF</span>
+          <div className="field-foot">
+            {p.match_quality === 'wrong-page' && p.verified_page !== null ? (
+              <>
+                <span>claimed p. {p.evidence_page}</span>
+                <span className="foot-warn">&rarr; found on p. {p.verified_page}</span>
+              </>
+            ) : p.match_quality === 'not-found' ? (
+              <>
+                <span>cited p. {p.evidence_page}</span>
+                <span className="foot-error">quote not found in PDF</span>
+              </>
+            ) : (
+              <span>p. {p.evidence_page}</span>
             )}
           </div>
         </button>
       ))}
-    </div>
+    </>
   );
 }

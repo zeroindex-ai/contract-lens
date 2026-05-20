@@ -4,7 +4,10 @@
   "private": true,
   "description": "Structured PDF extraction with verified citations. Document intelligence demo for ZeroIndex.",
   "scripts": {
+    "copy-pdf-worker": "node scripts/copy-pdf-worker.mjs",
+    "predev": "pnpm copy-pdf-worker",
     "dev": "next dev",
+    "prebuild": "pnpm copy-pdf-worker",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",

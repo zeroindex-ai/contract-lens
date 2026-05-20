@@ -101,17 +101,12 @@ export function DemoShell({ samples }: DemoShellProps) {
     <section className="pt-10 pb-24">
       <div className="label mb-3">Lens</div>
       <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Document intelligence &mdash; verified.</h1>
-      <p className="mt-4 muted text-base leading-relaxed max-w-4xl">
-        Upload a contract PDF or pick a sample. Every extracted field is matched back to the source page;
-        fields that can&rsquo;t be verified are flagged, not silently passed through.
+      <p className="mt-4 muted text-base leading-relaxed max-w-5xl">
+        Upload a contract PDF or pick a sample below. Every extracted field is checked against the source
+        page &mdash; anything we can&rsquo;t verify is flagged, not silently passed through.
       </p>
 
-      <div className="grad-divider" style={{ margin: '32px 0' }}></div>
-
-      <h2 className="label mb-2">Samples</h2>
-      <SamplePicker samples={samples} onPick={pickSample} />
-
-      <h2 className="label mt-10 mb-2">Or upload your own</h2>
+      <h2 className="label mb-2 mt-12">Upload a contract</h2>
       <UploadZone onFile={uploadFile} disabled={view.kind === 'loading'} />
 
       {view.kind === 'loading' && (
@@ -126,6 +121,9 @@ export function DemoShell({ samples }: DemoShellProps) {
           <strong>Extraction failed.</strong> {view.message}
         </div>
       )}
+
+      <h2 className="label mt-12 mb-2">Or try an example</h2>
+      <SamplePicker samples={samples} onPick={pickSample} />
     </section>
   );
 }

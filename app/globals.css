@@ -123,6 +123,17 @@ body {
   color: var(--ink);
 }
 
+.inline-link {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: var(--line-strong);
+  text-underline-offset: 3px;
+  transition: opacity 0.15s ease;
+}
+.inline-link:hover {
+  opacity: 0.8;
+}
+
 .skip-link {
   position: absolute;
   left: -9999px;
@@ -194,69 +205,221 @@ body {
   background: var(--muted-2);
 }
 
-/* Field row — one extracted field, clickable to select. Selected row gets a
-   subtle accent border on the left. */
-.field-row {
-  position: relative;
-  padding: 14px 18px 14px 22px;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background 0.12s ease;
-  border: 1px solid transparent;
+/* ── summary strip ───────────────────────────────────────────────────────── */
+.source-line {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted-2);
+  margin: 0 0 18px;
 }
-.field-row:hover {
+.summary-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 28px;
+  padding: 18px 22px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  margin-bottom: 14px;
+}
+.summary-strip .stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.summary-strip .stat .n {
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1;
+}
+.summary-strip .stat .k {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted-2);
+}
+.summary-meter {
+  flex: 1;
+  min-width: 160px;
+  height: 8px;
+  border-radius: 999px;
+  overflow: hidden;
+  display: flex;
   background: var(--bg-soft);
 }
-.field-row.selected {
-  background: var(--bg-soft);
-  border-color: var(--line);
+.summary-meter span {
+  display: block;
+  height: 100%;
 }
-.field-row.selected::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 12px;
-  bottom: 12px;
-  width: 3px;
-  background: var(--accent-1);
-  border-radius: 2px;
+.summary-divider {
+  width: 1px;
+  align-self: stretch;
+  background: var(--line);
 }
-.field-row .field-label {
+.summary-meta {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px;
+  color: var(--muted);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  text-align: right;
+}
+
+/* ── legend ──────────────────────────────────────────────────────────────── */
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  margin-bottom: 22px;
+  padding-left: 2px;
+}
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+}
+.dot-green {
+  background: var(--accent-go);
+}
+.dot-amber {
+  background: var(--warn);
+}
+.dot-red {
+  background: var(--error);
+}
+.dot-gray {
+  background: var(--muted-2);
+}
+
+/* ── field groups + rows ─────────────────────────────────────────────────── */
+.field-group {
+  margin-bottom: 24px;
+}
+.group-title {
   font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: 11px;
   font-weight: 500;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted-2);
+  padding: 0 0 8px 2px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 6px;
+}
+
+.field-row {
+  position: relative;
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 12px 14px 12px 16px;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  transition:
+    background 0.12s ease,
+    border-color 0.12s ease,
+    box-shadow 0.12s ease;
+}
+.field-row:hover {
+  background: #fff;
+  border-color: var(--line-strong);
+  box-shadow: 0 4px 16px -12px rgba(124, 58, 237, 0.45);
+}
+.field-row:hover .field-name {
+  color: var(--accent-1);
+}
+/* Selected = elevated card (consistent with hover) but locked in: violet
+   border + accent left-bar + stronger shadow. */
+.field-row.active {
+  background: #fff;
+  border-color: var(--accent-1);
+  box-shadow: 0 6px 20px -12px rgba(124, 58, 237, 0.55);
+}
+.field-row.active .field-name {
+  color: var(--accent-1);
+}
+.field-row.active::before {
+  content: '';
+  position: absolute;
+  left: -1px;
+  top: 8px;
+  bottom: 8px;
+  width: 3px;
+  border-radius: 2px 0 0 2px;
+  background: var(--accent-1);
+}
+.field-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.field-name {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--muted);
 }
-.field-row .field-value {
+.field-value {
   margin-top: 4px;
   color: var(--ink);
   font-size: 14px;
   line-height: 1.45;
 }
-.field-row .field-value.null {
+.field-value.null {
   color: var(--muted-2);
   font-style: italic;
 }
-.field-row .field-meta {
-  margin-top: 6px;
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
-  font-size: 10.5px;
-  letter-spacing: 0.08em;
-  color: var(--muted-2);
-  display: flex;
-  gap: 10px;
-  align-items: center;
+.field-value-inline {
+  font-size: 14px;
+  color: var(--ink);
+  vertical-align: middle;
 }
-.field-row .party-pill {
+.field-foot {
+  margin-top: 7px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  color: var(--muted-2);
+}
+.field-foot .foot-warn {
+  color: var(--warn);
+}
+.field-foot .foot-error {
+  color: var(--error);
+}
+.party-role {
   display: inline-block;
-  font-size: 11px;
+  font-size: 10px;
   color: var(--muted);
   margin-right: 8px;
   padding: 1px 6px;
   border: 1px solid var(--line);
   border-radius: 4px;
+  vertical-align: middle;
 }
 
 /* Warning banner — appears when any field has confidence below the threshold. */
@@ -293,7 +456,7 @@ body {
 }
 @media (min-width: 900px) {
   .viewer-split {
-    grid-template-columns: minmax(0, 5fr) minmax(0, 4fr);
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
   }
 }
 
@@ -342,15 +505,51 @@ body {
 .pdf-canvas-wrap {
   border: 1px solid var(--line);
   border-radius: 6px;
-  overflow: hidden;
+  overflow: auto;
   background: #fff;
   display: flex;
   justify-content: center;
+  max-height: 620px;
+}
+/* the stage holds canvas + text layer in the same coordinate space */
+.pdf-stage {
+  position: relative;
+  line-height: 0;
 }
 .pdf-canvas-wrap canvas {
   display: block;
   max-width: 100%;
   height: auto;
+}
+/* pdfjs text layer — transparent overlay aligned to the canvas. Spans are
+   absolutely positioned by pdfjs using the --scale-factor we set. */
+.textLayer {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  line-height: 1;
+  text-size-adjust: none;
+  forced-color-adjust: none;
+  transform-origin: 0 0;
+  z-index: 2;
+}
+.textLayer span,
+.textLayer br {
+  position: absolute;
+  white-space: pre;
+  cursor: text;
+  transform-origin: 0% 0%;
+  color: transparent;
+}
+.textLayer span.hl {
+  background: var(--highlight, #fde68a);
+  border-radius: 2px;
+  /* fatten the hit slightly so adjacent words read as one highlight */
+  padding: 0.5px 0;
+  mix-blend-mode: multiply;
+}
+:root {
+  --highlight: #fde68a;
 }
 .pdf-quote {
   margin-top: 12px;
@@ -427,6 +626,7 @@ body {
 
 /* Upload zone */
 .upload-zone {
+  display: block;
   border: 1.5px dashed var(--line-strong);
   border-radius: 10px;
   padding: 32px 24px;
