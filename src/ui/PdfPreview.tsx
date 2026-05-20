@@ -64,12 +64,13 @@ function dense(s: string): string {
 }
 
 /**
- * Highlight the text-layer spans that overlap the quote's character range.
+ * Highlight the text-layer spans that overlap the quote's character range and
+ * return the first highlighted span (so the caller can scroll it into view).
  * Both sides are dense-normalized (lowercase, quotes/dashes folded, ALL
  * whitespace removed) so PDF extraction quirks and arbitrary span splits
  * don't break the match.
  */
-function highlightQuote(container: HTMLElement, quote: string): boolean {
+function highlightQuote(container: HTMLElement, quote: string): HTMLElement | null {
   container.querySelectorAll('span.hl').forEach((el) => el.classList.remove('hl'));
   const spans = Array.from(container.querySelectorAll('span')).filter((s) => s.childElementCount === 0);
 
@@ -84,9 +85,9 @@ function highlightQuote(container: HTMLElement, quote: string): boolean {
   }
 
   const q = dense(quote);
-  if (!q) return false;
+  if (!q) return null;
   const idx = joined.indexOf(q);
-  if (idx < 0) return false;
+  if (idx < 0) return null;
 
   const qEnd = idx + q.length;
   let first: HTMLElement | null = null;
@@ -96,14 +97,26 @@ function highlightQuote(container: HTMLElement, quote: string): boolean {
       if (!first) first = r.el;
     }
   }
-  if (first) first.scrollIntoView({ block: 'center', behavior: 'smooth' });
-  return true;
+  return first;
+}
+
+/**
+ * Scroll ONLY the given scroll container so `el` is centered. Avoids
+ * element.scrollIntoView(), which scrolls every scrollable ancestor (incl.
+ * the window) and can yank the whole page to the top.
+ */
+function centerInContainer(container: HTMLElement, el: HTMLElement): void {
+  const cRect = container.getBoundingClientRect();
+  const eRect = el.getBoundingClientRect();
+  const target = container.scrollTop + (eRect.top - cRect.top) - container.clientHeight / 2 + eRect.height / 2;
+  container.scrollTo({ top: Math.max(0, target), behavior: 'smooth' });
 }
 
 export function PdfPreview({ pdfUrl, page, quote, hint }: PdfPreviewProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const textLayerRef = useRef<HTMLDivElement | null>(null);
   const stageRef = useRef<HTMLDivElement | null>(null);
+  const wrapRef = useRef<HTMLDivElement | null>(null);
   const [pageCount, setPageCount] = useState<number>(0);
   const [error, setError] = useState<string | null>(null);
 
@@ -176,7 +189,12 @@ export function PdfPreview({ pdfUrl, page, quote, hint }: PdfPreviewProps) {
         await textLayer.render();
         if (cancelled) return;
 
-        if (quote) highlightQuote(textLayerDiv, quote);
+        const firstHl = quote ? highlightQuote(textLayerDiv, quote) : null;
+        if (firstHl && wrapRef.current) {
+          const wrap = wrapRef.current;
+          // rAF so layout is settled before measuring; only the PDF panel scrolls.
+          requestAnimationFrame(() => centerInContainer(wrap, firstHl));
+        }
         pageObj.cleanup();
         setError(null);
       } catch (err) {
@@ -217,7 +235,7 @@ export function PdfPreview({ pdfUrl, page, quote, hint }: PdfPreviewProps) {
         </div>
         {hint && <span style={{ color: 'var(--warn)' }}>{hint}</span>}
       </div>
-      <div className="pdf-canvas-wrap">
+      <div className="pdf-canvas-wrap" ref={wrapRef}>
         <div className="pdf-stage" ref={stageRef}>
           <canvas ref={canvasRef} aria-label={`PDF page ${shownPage} of ${pageCount}`} />
           <div className="textLayer" ref={textLayerRef} aria-hidden="true" />
