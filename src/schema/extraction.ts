@@ -3,23 +3,27 @@ import { z } from 'zod';
 /**
  * Schema for a structured contract extraction.
  *
- * Each scalar field carries `value`, `evidence_quote` (verbatim from the PDF),
- * and `evidence_page`. When the field isn't present in the contract, the model
- * returns all three as null — Anthropic's strict mode requires every property
- * to be `required`, so nullability (not optionality) is how absence is expressed.
+ * Each scalar field is EITHER a full object (`value`, `evidence_quote`
+ * verbatim from the PDF, `evidence_page`) OR `null` when the field isn't
+ * present in the contract. Whole-field nullability (one union per field)
+ * keeps the strict-tool-use union count low — three independently-nullable
+ * properties per field would blow Anthropic strict mode's 16-union limit.
  *
  * The verification layer (src/lib/verify.ts) deterministically matches each
- * non-null `evidence_quote` against the PDF's extracted page text. Confidence
+ * field's `evidence_quote` against the PDF's extracted page text. Confidence
  * is computed there, not reported by the model.
  *
  * Field count: 10 (parties + 9 scalar fields).
  */
 
-const Field = z.object({
-  value: z.string().nullable(),
-  evidence_quote: z.string().nullable(),
-  evidence_page: z.number().int().positive().nullable(),
+const FieldData = z.object({
+  value: z.string(),
+  evidence_quote: z.string(),
+  evidence_page: z.number().int().positive(),
 });
+
+/** A scalar field: the data object, or null when absent from the contract. */
+const Field = FieldData.nullable();
 
 /**
  * One party to the contract. Roles are freeform (Buyer/Seller/Provider/Client/
@@ -47,6 +51,9 @@ export const ContractExtractionSchema = z.object({
 });
 
 export type ContractExtraction = z.infer<typeof ContractExtractionSchema>;
+/** Field data when present (non-null). */
+export type ContractFieldData = z.infer<typeof FieldData>;
+/** A scalar field as the model returns it: data object or null. */
 export type ContractField = z.infer<typeof Field>;
 export type ContractParty = z.infer<typeof Party>;
 

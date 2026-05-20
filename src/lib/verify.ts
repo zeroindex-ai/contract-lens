@@ -24,7 +24,12 @@ export type MatchQuality =
   | 'null-field' // model said field is not in contract (only applies to scalar Fields, not parties)
   | 'incomplete'; // model returned partial-null field (rare; verification skipped)
 
-export type VerifiedField = ContractField & {
+export type VerifiedField = {
+  // null for all three when the field is absent from the contract (null-field);
+  // otherwise the model's data, carried through to the UI.
+  value: string | null;
+  evidence_quote: string | null;
+  evidence_page: number | null;
   confidence: number; // 0..1
   verified_page: number | null; // page where the quote actually was; null if not found
   match_quality: MatchQuality;
@@ -73,20 +78,20 @@ export function verify(extraction: ContractExtraction, pageTexts: string[]): Ver
 /* -------------------------------------------------------------------------- */
 
 function verifyField(field: ContractField, pageTexts: string[]): VerifiedField {
-  const { value, evidence_quote, evidence_page } = field;
-
-  // All-null = model said this field isn't in the contract. Pass through.
-  if (value === null && evidence_quote === null && evidence_page === null) {
-    return { ...field, confidence: 1, verified_page: null, match_quality: 'null-field' };
+  // null = model said this field isn't in the contract. Pass through as a
+  // null-field; we can't disprove a negative from text-matching alone.
+  if (field === null) {
+    return {
+      value: null,
+      evidence_quote: null,
+      evidence_page: null,
+      confidence: 1,
+      verified_page: null,
+      match_quality: 'null-field',
+    };
   }
 
-  // Partial nulls — model returned some but not all parts of the triple.
-  // Can't verify; flag as incomplete and let the UI decide what to show.
-  if (evidence_quote === null || evidence_page === null) {
-    return { ...field, confidence: 0, verified_page: null, match_quality: 'incomplete' };
-  }
-
-  return locate(field, evidence_quote, evidence_page, pageTexts);
+  return locate(field, field.evidence_quote, field.evidence_page, pageTexts);
 }
 
 function verifyParty(party: ContractParty, pageTexts: string[]): VerifiedParty {

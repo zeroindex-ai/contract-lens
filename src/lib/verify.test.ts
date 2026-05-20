@@ -20,7 +20,7 @@ function makeExtraction(overrides: Partial<ContractExtraction> = {}): ContractEx
     ip_ownership: { value: 'work-for-hire', evidence_quote: 'work made for hire', evidence_page: 4 },
     termination_clause: { value: '30 days', evidence_quote: '30 days written notice', evidence_page: 5 },
     governing_law: { value: 'Pennsylvania', evidence_quote: 'laws of Pennsylvania', evidence_page: 6 },
-    kill_fee: { value: null, evidence_quote: null, evidence_page: null },
+    kill_fee: null,
     limitation_of_liability: {
       value: 'capped at fees paid',
       evidence_quote: 'liability shall not exceed fees paid',
@@ -99,20 +99,12 @@ describe('verify', () => {
     expect(result.governing_law.verified_page).toBeNull();
   });
 
-  it('passes through all-null fields as null-field / 1.0 (unverifiable negative)', () => {
+  it('passes through null fields as null-field / 1.0 (unverifiable negative)', () => {
     const result = verify(makeExtraction(), pageTexts);
     expect(result.kill_fee.match_quality).toBe('null-field');
     expect(result.kill_fee.confidence).toBe(1);
     expect(result.kill_fee.verified_page).toBeNull();
-  });
-
-  it('flags partial-null fields as incomplete', () => {
-    const ext = makeExtraction({
-      term: { value: '3 years', evidence_quote: null, evidence_page: 2 },
-    });
-    const result = verify(ext, pageTexts);
-    expect(result.term.match_quality).toBe('incomplete');
-    expect(result.term.confidence).toBe(0);
+    expect(result.kill_fee.value).toBeNull();
   });
 
   it('verifies all parties independently', () => {

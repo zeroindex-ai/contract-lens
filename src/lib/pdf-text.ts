@@ -39,7 +39,10 @@ export async function extractPdfText(pdfBuffer: Uint8Array): Promise<PdfTextResu
   const pdfjs = await getPdfjs();
 
   const loadingTask = pdfjs.getDocument({
-    data: pdfBuffer,
+    // Pass a COPY: pdfjs transfers/detaches the ArrayBuffer it's given, which
+    // would leave the caller's buffer empty for downstream use (base64 for the
+    // Anthropic call, sha256 for persistence). Cloning keeps the input intact.
+    data: new Uint8Array(pdfBuffer),
     // Node.js: no worker, no canvas-based rendering.
     disableWorker: true,
     isEvalSupported: false,

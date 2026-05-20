@@ -27,7 +27,7 @@ const fullExtraction = {
   ip_ownership: { value: 'work-for-hire', evidence_quote: 'work made for hire', evidence_page: 4 },
   termination_clause: { value: '30 days notice', evidence_quote: 'with 30 days written notice', evidence_page: 5 },
   governing_law: { value: 'Pennsylvania', evidence_quote: 'governed by the laws of Pennsylvania', evidence_page: 6 },
-  kill_fee: { value: null, evidence_quote: null, evidence_page: null },
+  kill_fee: null,
   limitation_of_liability: { value: 'capped at fees paid', evidence_quote: 'in no event shall liability exceed fees paid', evidence_page: 6 },
 };
 
@@ -37,8 +37,8 @@ describe('ContractExtractionSchema', () => {
     expect(result.success).toBe(true);
   });
 
-  it('validates a field with all-null (field not found in contract)', () => {
-    const data = { ...fullExtraction, governing_law: { value: null, evidence_quote: null, evidence_page: null } };
+  it('validates a null field (field not found in contract)', () => {
+    const data = { ...fullExtraction, governing_law: null };
     const result = ContractExtractionSchema.safeParse(data);
     expect(result.success).toBe(true);
   });
@@ -48,16 +48,15 @@ describe('ContractExtractionSchema', () => {
     expect(result.success).toBe(true);
   });
 
-  it('accepts partial-null field (verification layer flags it downstream)', () => {
-    // Convention is all-null OR all-non-null, but the schema permits partial
-    // nulls so the model can't 400 us with a near-miss — the verification
-    // layer treats partial nulls as low-confidence "incomplete" instead.
+  it('rejects a partial field (must be full object or null, not partial)', () => {
+    // Whole-field nullability: a present field needs all three properties.
+    // A partial object (missing evidence_quote/page) is invalid.
     const data = {
       ...fullExtraction,
-      term: { value: '3 years', evidence_quote: null, evidence_page: 2 },
+      term: { value: '3 years' },
     };
     const result = ContractExtractionSchema.safeParse(data);
-    expect(result.success).toBe(true);
+    expect(result.success).toBe(false);
   });
 
   it('rejects a missing top-level field', () => {

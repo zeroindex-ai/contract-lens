@@ -81,7 +81,12 @@ export async function extract(pdfBuffer: Uint8Array, options: ExtractOptions = {
   const client = options.client ?? new Anthropic();
   const model = options.model ?? process.env.ANTHROPIC_MODEL ?? DEFAULT_MODEL;
 
-  const inputSchema = z.toJSONSchema(ContractExtractionSchema);
+  // Wire schema for the tool. We enable `strict: true` so Claude's tool_use
+  // input conforms exactly to the schema (without strict it freelances and
+  // returns arrays/objects as strings). Strict mode rejects numeric/length
+  // constraints, so strip those from the wire schema — the Zod schema keeps
+  // them for our own response validation.
+  const inputSchema = stripUnsupportedConstraints(z.toJSONSchema(ContractExtractionSchema));
 
   const pdfBase64 = Buffer.from(pdfBuffer).toString('base64');
 
@@ -89,13 +94,16 @@ export async function extract(pdfBuffer: Uint8Array, options: ExtractOptions = {
   const response = await client.messages.create({
     model,
     max_tokens: 8192,
-    thinking: { type: 'adaptive' },
-    output_config: { effort: 'medium' },
+    // No `thinking` here: Anthropic rejects adaptive thinking when tool_choice
+    // forces a specific tool ("Thinking may not be enabled when tool_choice
+    // forces tool use"). We prioritize the guaranteed structured tool_use over
+    // thinking — field extraction with verbatim quotes doesn't need it.
     system: SYSTEM_PROMPT,
     tools: [
       {
         name: TOOL_NAME,
         description: 'Return the structured extraction from the contract PDF.',
+        strict: true,
         // Cast required: Anthropic's TS types want JSONSchema7-shaped input_schema,
         // but z.toJSONSchema returns a more general JSON Schema (draft 2020-12).
         // Anthropic accepts it at runtime.
@@ -158,4 +166,38 @@ export class ExtractionError extends Error {
     super(message);
     this.name = 'ExtractionError';
   }
+}
+
+/**
+ * Recursively strip JSON Schema keywords that Anthropic strict tool use
+ * doesn't support (numeric + length + array-size constraints). Zod adds these
+ * from `.int()` / `.positive()` etc.; they're fine for our own validation but
+ * a strict-mode tool schema rejects them.
+ */
+const UNSUPPORTED_KEYS = new Set([
+  'minimum',
+  'maximum',
+  'exclusiveMinimum',
+  'exclusiveMaximum',
+  'multipleOf',
+  'minLength',
+  'maxLength',
+  'pattern',
+  'format',
+  'minItems',
+  'maxItems',
+  'uniqueItems',
+]);
+
+function stripUnsupportedConstraints(schema: unknown): unknown {
+  if (Array.isArray(schema)) return schema.map(stripUnsupportedConstraints);
+  if (schema && typeof schema === 'object') {
+    const out: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(schema as Record<string, unknown>)) {
+      if (UNSUPPORTED_KEYS.has(k)) continue;
+      out[k] = stripUnsupportedConstraints(v);
+    }
+    return out;
+  }
+  return schema;
 }

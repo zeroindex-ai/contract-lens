@@ -28,7 +28,7 @@ const validExtraction: ContractExtraction = {
   ip_ownership: { value: 'work-for-hire', evidence_quote: 'work made for hire', evidence_page: 4 },
   termination_clause: { value: '30 days', evidence_quote: '30 days notice', evidence_page: 5 },
   governing_law: { value: 'Pennsylvania', evidence_quote: 'laws of Pennsylvania', evidence_page: 6 },
-  kill_fee: { value: null, evidence_quote: null, evidence_page: null },
+  kill_fee: null,
   limitation_of_liability: {
     value: 'capped',
     evidence_quote: 'liability shall not exceed',
@@ -94,8 +94,8 @@ describe('extract', () => {
     expect(callArgs.model).toBe('claude-sonnet-4-6');
     expect(callArgs.tools[0].name).toBe('extract_contract');
     expect(callArgs.tool_choice).toEqual({ type: 'tool', name: 'extract_contract' });
-    expect(callArgs.thinking).toEqual({ type: 'adaptive' });
-    expect(callArgs.output_config).toEqual({ effort: 'medium' });
+    // No thinking/output_config — incompatible with forced tool_choice.
+    expect(callArgs.thinking).toBeUndefined();
 
     // PDF is base64 of fakePdf bytes
     const doc = callArgs.messages[0].content[0];

@@ -93,11 +93,11 @@ async function main() {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function stripVerification(obj: any): any {
-  const strip = (f: { value: unknown; evidence_quote: unknown; evidence_page: unknown }) => ({
-    value: f.value,
-    evidence_quote: f.evidence_quote,
-    evidence_page: f.evidence_page,
-  });
+  // A null-field (value === null) maps back to the model-input shape `null`;
+  // a present field maps to its data object. Mirrors the whole-field-nullable
+  // schema.
+  const strip = (f: { value: unknown; evidence_quote: unknown; evidence_page: unknown }) =>
+    f.value === null ? null : { value: f.value, evidence_quote: f.evidence_quote, evidence_page: f.evidence_page };
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const stripParty = (p: any) => ({
     name: p.name,
