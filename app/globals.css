@@ -509,7 +509,12 @@ body {
   overflow-x: hidden;
   scrollbar-gutter: stable;
   background: #fff;
-  max-height: 620px;
+  /* Cap to the viewport so the whole sticky panel (sticky-top 88 + page-bar +
+     this wrap + quote footer + padding ≈ 280px of chrome) always fits on
+     screen. Then the inner scroll container is always fully visible, so
+     centering the highlight inside it reliably shows the citation — the user
+     never has to scroll the window to find it. */
+  max-height: min(620px, calc(100vh - 280px));
 }
 /* the stage holds canvas + text layer in the same coordinate space; both are
    sized in JS to the container width so glyphs and highlight spans align. */
@@ -558,6 +563,10 @@ body {
   line-height: 1.5;
   color: var(--ink);
   white-space: pre-wrap;
+  /* bound the footer height so a long quote can't push the sticky panel past
+     the viewport; it scrolls internally if needed */
+  max-height: 92px;
+  overflow-y: auto;
 }
 .pdf-quote .quote-meta {
   margin-top: 6px;
