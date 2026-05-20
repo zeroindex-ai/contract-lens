@@ -40,9 +40,7 @@ export function WarningBanner({ verified }: WarningBannerProps) {
         !
       </span>
       <div>
-        <strong>
-          {unverified} of {total} fields couldn&rsquo;t be verified against the source PDF.
-        </strong>{' '}
+        <strong>{`${unverified} of ${total} fields couldn’t be verified against the source PDF.`}</strong>{' '}
         Review the flagged rows below before relying on this extraction. Click a row to see what the model
         claimed and where the verification looked.
       </div>
