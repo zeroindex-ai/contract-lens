@@ -728,6 +728,17 @@ body {
   border-radius: 8px;
   font-size: 13px;
 }
+/* Calm, non-alarming notice — e.g. hitting the daily upload cap. Not a failure,
+   so it uses a neutral amber/info treatment rather than the red error style. */
+.demo-notice {
+  background: rgba(180, 83, 9, 0.06);
+  border: 1px solid rgba(180, 83, 9, 0.25);
+  color: var(--warn);
+  padding: 14px 18px;
+  border-radius: 8px;
+  font-size: 13px;
+  line-height: 1.5;
+}
 .loading-state {
   display: flex;
   align-items: center;

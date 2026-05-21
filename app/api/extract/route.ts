@@ -62,7 +62,7 @@ export async function POST(req: Request): Promise<NextResponse> {
         {
           error: {
             code: 'RATE_LIMITED',
-            message: `Daily limit reached. Try again after ${rate.resetsAtUtc}`,
+            message: `You've reached today's demo limit for uploads. It resets at midnight UTC — meanwhile, the sample contracts below are always available.`,
           },
         },
         { status: 429, headers: { 'x-ratelimit-reset': rate.resetsAtUtc } }

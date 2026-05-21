@@ -13,7 +13,7 @@ export interface DemoShellProps {
 type ViewState =
   | { kind: 'initial' }
   | { kind: 'loading'; label: string }
-  | { kind: 'error'; message: string }
+  | { kind: 'error'; message: string; code?: string }
   | {
       kind: 'extracted';
       sourceLabel: string;
@@ -62,8 +62,9 @@ export function DemoShell({ samples }: DemoShellProps) {
         | { error: { code: string; message: string } };
       if (!res.ok || 'error' in body) {
         const message = 'error' in body ? body.error.message : `Extraction failed (${res.status})`;
+        const code = 'error' in body ? body.error.code : undefined;
         URL.revokeObjectURL(pdfUrl);
-        setView({ kind: 'error', message });
+        setView({ kind: 'error', message, code });
         return;
       }
       setView({
@@ -116,11 +117,16 @@ export function DemoShell({ samples }: DemoShellProps) {
         </div>
       )}
 
-      {view.kind === 'error' && (
-        <div className="error-state" style={{ marginTop: 16 }}>
-          <strong>Extraction failed.</strong> {view.message}
-        </div>
-      )}
+      {view.kind === 'error' &&
+        (view.code === 'RATE_LIMITED' ? (
+          <div className="demo-notice" style={{ marginTop: 16 }}>
+            {view.message}
+          </div>
+        ) : (
+          <div className="error-state" style={{ marginTop: 16 }}>
+            <strong>Extraction failed.</strong> {view.message}
+          </div>
+        ))}
 
       <h2 className="label mt-12 mb-2">Or try an example</h2>
       <SamplePicker samples={samples} onPick={pickSample} />
