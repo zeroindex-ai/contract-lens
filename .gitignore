@@ -41,3 +41,6 @@ public/pdf.worker.min.mjs
 
 # local design scratchpad — throwaway HTML mockups, not shipped
 mockups/
+
+# eval run artifacts — the canonical report is published to evals.zeroindex.ai
+evals/results/

@@ -51,6 +51,9 @@ importers:
       '@types/react-dom':
         specifier: ^19
         version: 19.2.3(@types/react@19.2.14)
+      '@zeroindex-ai/eval-pack':
+        specifier: ^0.3.0
+        version: 0.3.0(@anthropic-ai/sdk@0.96.0(zod@4.4.3))
       eslint:
         specifier: ^9
         version: 9.39.4(jiti@2.7.0)
@@ -1158,6 +1161,16 @@ packages:
 
   '@vitest/utils@4.1.6':
     resolution: {integrity: sha512-FxIY+U81R3LGKCxaHHFRQ5+g6/iRgGLmeHWdp2Amj4ljQRrEIWHmZyDfDYBRZlpyqA7qKxtS9DD1dhk8RnRIVQ==}
+
+  '@zeroindex-ai/eval-pack@0.3.0':
+    resolution: {integrity: sha512-QZy3YmoA4M5nmYJCla3z+5RdVIa3N7gxv3CPkSgV/4SrJdxABSUONZxHVix8sJVQvL0k9fbV/8ABHw9m8HLrUQ==}
+    engines: {node: '>=20'}
+    hasBin: true
+    peerDependencies:
+      '@anthropic-ai/sdk': ^0.96.0
+    peerDependenciesMeta:
+      '@anthropic-ai/sdk':
+        optional: true
 
   acorn-jsx@5.3.2:
     resolution: {integrity: sha512-rq9s+JNhf0IChjtDXxllJ7g41oZk5SlXtp0LHwyA5cejwn7vKmKp4pPri6YEePv2PU65sAsegbXtIinmDFDXgQ==}
@@ -3532,6 +3545,12 @@ snapshots:
       '@vitest/pretty-format': 4.1.6
       convert-source-map: 2.0.0
       tinyrainbow: 3.1.0
+
+  '@zeroindex-ai/eval-pack@0.3.0(@anthropic-ai/sdk@0.96.0(zod@4.4.3))':
+    dependencies:
+      zod: 4.4.3
+    optionalDependencies:
+      '@anthropic-ai/sdk': 0.96.0(zod@4.4.3)
 
   acorn-jsx@5.3.2(acorn@8.16.0):
     dependencies:

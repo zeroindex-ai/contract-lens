@@ -1,0 +1,96 @@
+{
+  "version": "1.0",
+  "items": [
+    {
+      "id": "mutual-nda",
+      "category": "nda",
+      "question": "mutual-nda",
+      "tags": ["clean"],
+      "metadata": {
+        "pdf": "mutual-nda.pdf",
+        "expected": {
+          "parties": ["Acme Robotics", "Globex Partners"],
+          "fields": {
+            "effective_date": ["2026-06-01"],
+            "term": ["3 year"],
+            "payment_terms": null,
+            "deliverables": null,
+            "ip_ownership": [],
+            "termination_clause": ["30 day"],
+            "governing_law": ["delaware"],
+            "kill_fee": null,
+            "limitation_of_liability": ["$1,000"]
+          }
+        }
+      }
+    },
+    {
+      "id": "fixed-fee-sow",
+      "category": "sow",
+      "question": "fixed-fee-sow",
+      "tags": ["clean"],
+      "metadata": {
+        "pdf": "fixed-fee-sow.pdf",
+        "expected": {
+          "parties": ["Phoenix Industries", "BlueRiver Consulting"],
+          "fields": {
+            "effective_date": ["2026-04-15"],
+            "term": ["september 30, 2026"],
+            "payment_terms": ["$42,000"],
+            "deliverables": ["dagster"],
+            "ip_ownership": ["work"],
+            "termination_clause": ["14 day"],
+            "governing_law": ["california"],
+            "kill_fee": ["25%"],
+            "limitation_of_liability": []
+          }
+        }
+      }
+    },
+    {
+      "id": "consulting-msa",
+      "category": "msa",
+      "question": "consulting-msa",
+      "tags": ["clean"],
+      "metadata": {
+        "pdf": "consulting-msa.pdf",
+        "expected": {
+          "parties": ["Meridian Health", "Atlas Strategic"],
+          "fields": {
+            "effective_date": ["2026-01-01"],
+            "term": ["12 month"],
+            "payment_terms": ["$250"],
+            "deliverables": [],
+            "ip_ownership": [],
+            "termination_clause": ["30 day"],
+            "governing_law": ["new york"],
+            "kill_fee": null,
+            "limitation_of_liability": []
+          }
+        }
+      }
+    },
+    {
+      "id": "contributor-license-agreement",
+      "category": "cla",
+      "question": "contributor-license-agreement",
+      "tags": ["edge", "absent-fields"],
+      "metadata": {
+        "pdf": "contributor-license-agreement.pdf",
+        "expected": {
+          "parties": ["Open Beacon Foundation", "Contributor"],
+          "fields": {
+            "term": ["perpetual"],
+            "payment_terms": null,
+            "deliverables": [],
+            "ip_ownership": [],
+            "termination_clause": null,
+            "governing_law": ["delaware"],
+            "kill_fee": null,
+            "limitation_of_liability": []
+          }
+        }
+      }
+    }
+  ]
+}

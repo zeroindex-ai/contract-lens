@@ -157,11 +157,29 @@ Upstream API errors (billing, rate limits, auth) are logged server-side and retu
 
 ---
 
-## 6. Cross-references
+## 6. Evaluation
+
+The extraction quality is scored with [`@zeroindex-ai/eval-pack`](https://github.com/zeroindex-ai/eval-pack) against a hand-labeled golden set of contracts (`evals/golden.json`). Grading is fully deterministic — no LLM judge:
+
+- **field_values** — each asserted field matches ground truth: absent fields stay absent (the model doesn't invent a clause), present fields contain the essential facts (dates, amounts, governing law).
+- **parties** — every expected party is recovered.
+- **citations_verified** — the core assertion: every field the model reports must carry a citation that lands in the source PDF on the right page. A hallucinated (not-found) or mis-paginated (wrong-page) quote fails the item. This is the "verified" in the product promise, measured.
+
+The golden set deliberately includes edge cases — a contract type with several absent fields, to confirm the model doesn't fabricate them. The check logic itself is unit-tested offline (`evals/checks.test.ts`) using the committed sample extractions as fixtures, so CI guards the grader without spending API budget.
+
+```bash
+ANTHROPIC_API_KEY="$(op read 'op://ZeroIndex LLC/contract-lens secrets/ANTHROPIC_API_KEY')" pnpm eval
+```
+
+The latest run is published at [`evals.zeroindex.ai/contract-lens`](https://evals.zeroindex.ai/contract-lens).
+
+---
+
+## 7. Cross-references
 
 - **Companion (pre-prod correctness):** [`zeroindex-ai/eval-pack`](https://github.com/zeroindex-ai/eval-pack)
 - **Companion (post-prod observability):** [`zeroindex-ai/trace-pack`](https://github.com/zeroindex-ai/trace-pack) — `traces.zeroindex.ai`
-- **Eval reports:** [`evals.zeroindex.ai`](https://evals.zeroindex.ai)
+- **Eval reports:** [`evals.zeroindex.ai/contract-lens`](https://evals.zeroindex.ai/contract-lens)
 - **This repo:** [`zeroindex-ai/contract-lens`](https://github.com/zeroindex-ai/contract-lens) — live at `lens.zeroindex.ai`
 
 ---

@@ -35,6 +35,12 @@ pnpm test:e2e                                     # playwright (chromium, sample
 pnpm dev                                          # localhost:3000
 ```
 
+Extraction accuracy is scored with [`@zeroindex-ai/eval-pack`](https://github.com/zeroindex-ai/eval-pack) against a hand-labeled golden set (`evals/`). Grading is deterministic — field-fact matching, party recall, and citation verification (a hallucinated or mis-paginated quote fails the item). The latest run is published at [evals.zeroindex.ai/contract-lens](https://evals.zeroindex.ai/contract-lens).
+
+```bash
+ANTHROPIC_API_KEY="$(op read '...')" pnpm eval     # runs the live pipeline over the golden set
+```
+
 Set required env vars in `.env.local` (see `.env.example`).
 
 ## License
