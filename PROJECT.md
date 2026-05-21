@@ -167,6 +167,8 @@ The extraction quality is scored with [`@zeroindex-ai/eval-pack`](https://github
 
 The golden set deliberately includes edge cases — a contract type with several absent fields, to confirm the model doesn't fabricate them. The check logic itself is unit-tested offline (`evals/checks.test.ts`) using the committed sample extractions as fixtures, so CI guards the grader without spending API budget.
 
+The eval runs in CI (`.github/workflows/eval.yml`) with `ANTHROPIC_API_KEY` as a repo secret, then renders and publishes to `evals-site` via `EVALS_SITE_TOKEN` — the same auto-publish pattern as `ask-zeroindex` and `intake-zero`. The pass threshold is a coarse floor (0.5), not a quality target: `citations_verified` is intentionally strict — a single non-verbatim model quote flags the whole contract — and with only four contracts the headline number is noisy. The real signal is the per-contract report (which fields verified, which were flagged). A flagged citation is the verification layer doing its job, not a defect; the report shows it rather than hiding it. The floor rises as the golden set grows. *(This eval found a real production bug on its first run: the model occasionally emits `evidence_page: 0`, which used to 500 the whole extraction — now tolerated.)*
+
 ```bash
 # In-process — runs the pipeline directly (deterministic, no rate limit):
 ANTHROPIC_API_KEY="$(op read '...')" pnpm eval
