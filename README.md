@@ -4,7 +4,7 @@ Structured PDF extraction with verified citations. Document intelligence demo fo
 
 ## Status
 
-v0.1 in progress. Will live at **lens.zeroindex.ai**.
+v0.1 shipped — live at **[lens.zeroindex.ai](https://lens.zeroindex.ai)**. See [`PROJECT.md`](./PROJECT.md) for scope, decisions, architecture, and the API contract.
 
 ## What it does
 
@@ -18,7 +18,9 @@ Companion to the rest of the ZeroIndex stack:
 
 ## How it works
 
-A visitor uploads a PDF → `POST /api/extract` validates it (PDF magic bytes, ≤ 10 MB, ≤ 30 pages, ≤ 5/IP/day) → Anthropic Messages API (Claude Sonnet 4.6) is called with the base64 PDF and a forced `tool_use` whose `input_schema` is the Zod `ContractExtraction` schema → each returned field's `evidence_quote` is deterministically matched against `pdfjs-dist`-extracted page text to compute confidence → typed JSON is returned to the client, persisted to Turso (raw PDF discarded), and a fire-and-forget event is POSTed to `traces.zeroindex.ai`.
+A visitor uploads a PDF → `POST /api/extract` validates it (PDF magic bytes, ≤ 10 MB, ≤ 30 pages, has extractable text, ≤ 5/IP/day) → Anthropic Messages API (Claude Sonnet 4.6) is called with the base64 PDF and a forced `strict` `tool_use` whose `input_schema` is derived from the Zod `ContractExtraction` schema → each returned field's `evidence_quote` is deterministically matched against `unpdf`-extracted per-page text to compute a confidence and match quality → typed JSON is returned to the client, persisted to Turso (raw PDF discarded), and a fire-and-forget event is POSTed to `traces.zeroindex.ai`.
+
+Server-side text extraction uses [`unpdf`](https://github.com/unjs/unpdf) (a worker-free, serverless-safe build of pdf.js); the browser preview pane uses `pdfjs-dist` directly to render pages and overlay the highlighted citation.
 
 Native Anthropic citations (`citations: {enabled: true}`) are not used — they are API-incompatible with structured output. The self-reported-plus-verified approach gives per-field anchoring, computed confidence, and hallucination detection in a single API call.
 
