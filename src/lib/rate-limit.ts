@@ -12,9 +12,12 @@ import type { Client } from '@libsql/client';
  * — no eviction job needed; old rows just sit there until manual cleanup.
  */
 
-/** Default daily cap. Override per-environment with RATE_LIMIT_PER_DAY
- *  (e.g. a high value locally for testing, 5 in production). */
-export const DAILY_LIMIT = 5;
+/** Default per-IP daily cap on *uploads* (sample browsing is free — it loads
+ *  pre-baked results, no API call). Sized for a public demo: a genuine
+ *  evaluator uploads a handful of documents, while a single IP can't run up
+ *  unbounded model cost. Override per-environment with RATE_LIMIT_PER_DAY
+ *  (e.g. a high value while actively testing). */
+export const DAILY_LIMIT = 25;
 
 function effectiveDailyLimit(): number {
   const fromEnv = Number(process.env.RATE_LIMIT_PER_DAY);
