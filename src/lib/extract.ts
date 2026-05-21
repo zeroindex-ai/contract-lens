@@ -13,9 +13,12 @@ import { ContractExtractionSchema, type ContractExtraction } from '@/schema/extr
  *   model's self-reported `evidence_quote` + `evidence_page` inside the
  *   tool_use input, then the verification layer (src/lib/verify.ts) checks
  *   each quote against the actual PDF text.
- * - `strict: true` is NOT used. Our Zod schema includes numerical
- *   constraints (positive integers via `.positive()`) which strict mode
- *   rejects. Zod parsing of the response is our source of truth.
+ * - `strict: true` IS used so the model's tool_use input conforms to the
+ *   schema's shape. Strict mode rejects numeric/length JSON-schema keywords,
+ *   so those are stripped from the wire schema (see stripUnsupportedConstraints)
+ *   while the Zod schema keeps the structural guarantees for our own parse.
+ *   Note evidence_page is intentionally not `.positive()` — the model can
+ *   still emit an out-of-range page and verify() tolerates it.
  * - No retry logic in v0.1. Errors surface plainly; the route handler maps
  *   them to 4xx/500.
  */

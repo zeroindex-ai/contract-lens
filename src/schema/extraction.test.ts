@@ -75,10 +75,19 @@ describe('ContractExtractionSchema', () => {
     expect(result.success).toBe(false);
   });
 
-  it('rejects zero or negative page numbers', () => {
+  it('accepts a non-positive page number (the model occasionally emits 0; verify tolerates it)', () => {
     const data = {
       ...fullExtraction,
       effective_date: { value: '2026-05-17', evidence_quote: 'May 17, 2026', evidence_page: 0 },
+    };
+    const result = ContractExtractionSchema.safeParse(data);
+    expect(result.success).toBe(true);
+  });
+
+  it('rejects a non-integer page number', () => {
+    const data = {
+      ...fullExtraction,
+      effective_date: { value: '2026-05-17', evidence_quote: 'May 17, 2026', evidence_page: 1.5 },
     };
     const result = ContractExtractionSchema.safeParse(data);
     expect(result.success).toBe(false);

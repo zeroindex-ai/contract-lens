@@ -53,6 +53,16 @@ describe('verify', () => {
     expect(result.effective_date.verified_page).toBe(1);
   });
 
+  it('tolerates an out-of-range claimed page (model emitted 0) by searching the PDF', () => {
+    const ext = makeExtraction({
+      effective_date: { value: '2026-05-17', evidence_quote: 'May 17, 2026', evidence_page: 0 },
+    });
+    const result = verify(ext, pageTexts);
+    // Page 0 is invalid, but the quote is really on page 1 → wrong-page, not a crash.
+    expect(result.effective_date.match_quality).toBe('wrong-page');
+    expect(result.effective_date.verified_page).toBe(1);
+  });
+
   it('marks a normalized-only match as normalized / 1.0', () => {
     // Smart quotes in the model's quote, straight quotes in the PDF text
     const ext = makeExtraction({

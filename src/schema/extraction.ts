@@ -19,7 +19,13 @@ import { z } from 'zod';
 const FieldData = z.object({
   value: z.string(),
   evidence_quote: z.string(),
-  evidence_page: z.number().int().positive(),
+  // The model's *claimed* page. Not constrained to >0 on purpose: strict tool
+  // use can't carry a `minimum` keyword (it's stripped from the wire schema),
+  // so the model occasionally emits 0 / an out-of-range page. Enforcing
+  // `.positive()` here would 500 the whole extraction over one bad number.
+  // verify() treats the page as a claim and searches the PDF regardless, so a
+  // bad page degrades to wrong-page / not-found instead of a hard failure.
+  evidence_page: z.number().int(),
 });
 
 /** A scalar field: the data object, or null when absent from the contract. */
@@ -34,7 +40,13 @@ const Party = z.object({
   name: z.string(),
   role: z.string(),
   evidence_quote: z.string(),
-  evidence_page: z.number().int().positive(),
+  // The model's *claimed* page. Not constrained to >0 on purpose: strict tool
+  // use can't carry a `minimum` keyword (it's stripped from the wire schema),
+  // so the model occasionally emits 0 / an out-of-range page. Enforcing
+  // `.positive()` here would 500 the whole extraction over one bad number.
+  // verify() treats the page as a claim and searches the PDF regardless, so a
+  // bad page degrades to wrong-page / not-found instead of a hard failure.
+  evidence_page: z.number().int(),
 });
 
 export const ContractExtractionSchema = z.object({
