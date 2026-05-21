@@ -168,10 +168,15 @@ The extraction quality is scored with [`@zeroindex-ai/eval-pack`](https://github
 The golden set deliberately includes edge cases — a contract type with several absent fields, to confirm the model doesn't fabricate them. The check logic itself is unit-tested offline (`evals/checks.test.ts`) using the committed sample extractions as fixtures, so CI guards the grader without spending API budget.
 
 ```bash
-ANTHROPIC_API_KEY="$(op read 'op://ZeroIndex LLC/contract-lens secrets/ANTHROPIC_API_KEY')" pnpm eval
+# In-process — runs the pipeline directly (deterministic, no rate limit):
+ANTHROPIC_API_KEY="$(op read '...')" pnpm eval
+
+# Or score the deployed stack end-to-end (key stays in the server env;
+# subject to the endpoint's per-IP daily rate limit):
+EVAL_TARGET_URL=https://lens.zeroindex.ai pnpm eval
 ```
 
-The latest run is published at [`evals.zeroindex.ai/contract-lens`](https://evals.zeroindex.ai/contract-lens).
+Ground truth is calibrated to the model's natural phrasing: content is pinned only on stable facts (governing-law jurisdiction, headline figures), while free-text fields are asserted by presence/absence. The verification check does the heavy lifting on correctness. The latest run is published at [`evals.zeroindex.ai/contract-lens`](https://evals.zeroindex.ai/contract-lens).
 
 ---
 

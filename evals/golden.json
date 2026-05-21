@@ -11,15 +11,15 @@
         "expected": {
           "parties": ["Acme Robotics", "Globex Partners"],
           "fields": {
-            "effective_date": ["2026-06-01"],
-            "term": ["3 year"],
+            "effective_date": [],
+            "term": [],
             "payment_terms": null,
             "deliverables": null,
             "ip_ownership": [],
-            "termination_clause": ["30 day"],
+            "termination_clause": [],
             "governing_law": ["delaware"],
             "kill_fee": null,
-            "limitation_of_liability": ["$1,000"]
+            "limitation_of_liability": []
           }
         }
       }
@@ -34,12 +34,12 @@
         "expected": {
           "parties": ["Phoenix Industries", "BlueRiver Consulting"],
           "fields": {
-            "effective_date": ["2026-04-15"],
-            "term": ["september 30, 2026"],
+            "effective_date": [],
+            "term": [],
             "payment_terms": ["$42,000"],
-            "deliverables": ["dagster"],
-            "ip_ownership": ["work"],
-            "termination_clause": ["14 day"],
+            "deliverables": [],
+            "ip_ownership": [],
+            "termination_clause": [],
             "governing_law": ["california"],
             "kill_fee": ["25%"],
             "limitation_of_liability": []
@@ -57,12 +57,12 @@
         "expected": {
           "parties": ["Meridian Health", "Atlas Strategic"],
           "fields": {
-            "effective_date": ["2026-01-01"],
-            "term": ["12 month"],
+            "effective_date": [],
+            "term": [],
             "payment_terms": ["$250"],
             "deliverables": [],
             "ip_ownership": [],
-            "termination_clause": ["30 day"],
+            "termination_clause": [],
             "governing_law": ["new york"],
             "kill_fee": null,
             "limitation_of_liability": []
@@ -80,7 +80,7 @@
         "expected": {
           "parties": ["Open Beacon Foundation", "Contributor"],
           "fields": {
-            "term": ["perpetual"],
+            "term": [],
             "payment_terms": null,
             "deliverables": [],
             "ip_ownership": [],

@@ -21,11 +21,14 @@ function pad(s: string | number, n: number): string {
 }
 
 async function main(): Promise<void> {
-  if (!process.env.ANTHROPIC_API_KEY) {
+  const target = process.env.EVAL_TARGET_URL;
+  if (!target && !process.env.ANTHROPIC_API_KEY) {
     throw new Error(
-      'ANTHROPIC_API_KEY is required. Run: ANTHROPIC_API_KEY="$(op read \'op://ZeroIndex LLC/contract-lens secrets/ANTHROPIC_API_KEY\')" pnpm eval'
+      'Set EVAL_TARGET_URL=https://lens.zeroindex.ai to score the deployed endpoint, ' +
+        'or provide ANTHROPIC_API_KEY to run the pipeline in-process.'
     );
   }
+  console.log(`Target: ${target ?? 'in-process (local Messages API)'}\n`);
 
   const onlyCategory = process.argv[2] || undefined;
   const limit = process.argv[3] ? parseInt(process.argv[3], 10) : undefined;
