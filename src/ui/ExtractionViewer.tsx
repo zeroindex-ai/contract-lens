@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { VerifiedContractExtraction } from '@/lib/verify';
 import type { ScalarFieldKey } from '@/schema/extraction';
 import { FieldRow, PartiesRow } from './FieldRow';
 import { PdfPreview } from './PdfPreview';
 import { WarningBanner } from './WarningBanner';
+import { buildCitationMarks } from './marks';
 import { FIELD_GROUPS, summarize } from './groups';
 
 export interface ExtractionMetadataShape {
@@ -45,28 +46,43 @@ export function ExtractionViewer({
     return null;
   });
 
-  // Resolve the page to show + quote + hint from the current selection.
+  // Every locatable citation (verified on a real page) across the document.
+  // PdfPreview highlights the ones on the visible page so a page reads as a
+  // trust map; clicking a highlight selects that citation. Memoized so its
+  // identity is stable across selection changes (the heavy render keys off it).
+  const marks = useMemo(() => buildCitationMarks(extraction), [extraction]);
+
+  const selectedKey =
+    selection?.kind === 'party'
+      ? `party:${selection.index}`
+      : selection?.kind === 'field'
+        ? `field:${selection.key}`
+        : null;
+
+  function selectMark(key: string) {
+    if (key.startsWith('party:')) setSelection({ kind: 'party', index: Number(key.slice('party:'.length)) });
+    else if (key.startsWith('field:'))
+      setSelection({ kind: 'field', key: key.slice('field:'.length) as ScalarFieldKey });
+  }
+
+  // Resolve the page to show + hint from the current selection.
   // Key rule: jump to `verified_page` (where the quote actually is) when it
   // exists, falling back to the model's claimed `evidence_page` only when the
   // quote wasn't found anywhere — so wrong-page citations land the viewer on
   // the real location and the highlight can hit.
   let page: number | null = null;
-  let quote: string | null = null;
   let hint: string | null = null;
   if (selection?.kind === 'party') {
     const p = extraction.parties[selection.index];
     page = p.verified_page ?? p.evidence_page;
-    quote = p.evidence_quote;
     hint = hintFor(p.match_quality, p.evidence_page, p.verified_page);
   } else if (selection?.kind === 'field') {
     const f = extraction[selection.key];
     if (f.match_quality === 'null-field') {
       page = 1;
-      quote = null;
       hint = 'Field not present in this contract';
     } else {
       page = f.verified_page ?? f.evidence_page;
-      quote = f.evidence_quote;
       hint = hintFor(f.match_quality, f.evidence_page, f.verified_page);
     }
   }
@@ -160,7 +176,14 @@ export function ExtractionViewer({
           ))}
         </div>
 
-        <PdfPreview pdfUrl={pdfUrl} page={page} quote={quote} hint={hint} />
+        <PdfPreview
+          pdfUrl={pdfUrl}
+          page={page}
+          marks={marks}
+          selectedKey={selectedKey}
+          onSelectMark={selectMark}
+          hint={hint}
+        />
       </div>
 
       {metadata && <MetadataFooter metadata={metadata} />}

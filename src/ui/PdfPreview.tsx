@@ -1,7 +1,9 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type MouseEvent } from 'react';
 import { normalize } from '@/lib/match';
+import type { ConfidenceBand } from './confidence';
+import type { CitationMark } from './marks';
 
 /**
  * Renders one page of a PDF to a canvas with a transparent pdfjs text layer
@@ -21,11 +23,22 @@ export interface PdfPreviewProps {
   pdfUrl: string | null;
   /** 1-indexed; the page the selected field's evidence points at. */
   page: number | null;
-  /** The verbatim quote to highlight + display. */
-  quote: string | null;
+  /** All locatable citations across the document; the ones on the visible page are highlighted. */
+  marks: CitationMark[];
+  /** Key of the currently-selected citation (emphasized + scrolled into view). */
+  selectedKey: string | null;
+  /** Clicking a highlight on the page selects that citation. */
+  onSelectMark?: (key: string) => void;
   /** Optional human-readable hint (e.g. "wrong page" / "not found"). */
   hint?: string | null;
 }
+
+const BAND_CLASS: Record<ConfidenceBand, string> = {
+  green: 'hl-green',
+  amber: 'hl-amber',
+  red: 'hl-red',
+  gray: 'hl-amber',
+};
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 let pdfjsPromise: Promise<any> | null = null;
@@ -63,17 +76,29 @@ function dense(s: string): string {
   return normalize(s).replace(/\s+/g, '');
 }
 
-/**
- * Highlight the text-layer spans that overlap the quote's character range and
- * return the first highlighted span (so the caller can scroll it into view).
- * Both sides are dense-normalized (lowercase, quotes/dashes folded, ALL
- * whitespace removed) so PDF extraction quirks and arbitrary span splits
- * don't break the match.
- */
-function highlightQuote(container: HTMLElement, quote: string): HTMLElement | null {
-  container.querySelectorAll('span.hl').forEach((el) => el.classList.remove('hl'));
-  const spans = Array.from(container.querySelectorAll('span')).filter((s) => s.childElementCount === 0);
+const HL_CLASSES = ['hl', 'hl-green', 'hl-amber', 'hl-red', 'hl-selected'];
 
+/**
+ * Highlight every supplied citation's spans in the text layer, each colored by
+ * its confidence band, and tag them with the citation key so clicks can map
+ * back to a field. The selected citation also gets the `hl-selected` ring; its
+ * first span is returned so the caller can scroll it into view.
+ *
+ * Both sides are dense-normalized (lowercase, quotes/dashes folded, ALL
+ * whitespace removed) so PDF extraction quirks and arbitrary span splits don't
+ * break the match.
+ */
+function highlightMarks(
+  container: HTMLElement,
+  marks: CitationMark[],
+  selectedKey: string | null
+): HTMLElement | null {
+  container.querySelectorAll('span.hl').forEach((el) => {
+    el.classList.remove(...HL_CLASSES);
+    delete (el as HTMLElement).dataset.markKey;
+  });
+
+  const spans = Array.from(container.querySelectorAll('span')).filter((s) => s.childElementCount === 0);
   let joined = '';
   const ranges: { el: HTMLElement; start: number; end: number }[] = [];
   for (const el of spans) {
@@ -84,20 +109,26 @@ function highlightQuote(container: HTMLElement, quote: string): HTMLElement | nu
     ranges.push({ el: el as HTMLElement, start, end: joined.length });
   }
 
-  const q = dense(quote);
-  if (!q) return null;
-  const idx = joined.indexOf(q);
-  if (idx < 0) return null;
-
-  const qEnd = idx + q.length;
-  let first: HTMLElement | null = null;
-  for (const r of ranges) {
-    if (r.start < qEnd && r.end > idx) {
-      r.el.classList.add('hl');
-      if (!first) first = r.el;
+  let firstSelected: HTMLElement | null = null;
+  for (const mark of marks) {
+    const q = dense(mark.quote);
+    if (!q) continue;
+    const idx = joined.indexOf(q);
+    if (idx < 0) continue;
+    const qEnd = idx + q.length;
+    const isSelected = mark.key === selectedKey;
+    for (const r of ranges) {
+      if (r.start < qEnd && r.end > idx) {
+        r.el.classList.add('hl', BAND_CLASS[mark.band]);
+        r.el.dataset.markKey = mark.key;
+        if (isSelected) {
+          r.el.classList.add('hl-selected');
+          if (!firstSelected) firstSelected = r.el;
+        }
+      }
     }
   }
-  return first;
+  return firstSelected;
 }
 
 /**
@@ -112,7 +143,7 @@ function centerInContainer(container: HTMLElement, el: HTMLElement): void {
   container.scrollTo({ top: Math.max(0, target), behavior: 'smooth' });
 }
 
-export function PdfPreview({ pdfUrl, page, quote, hint }: PdfPreviewProps) {
+export function PdfPreview({ pdfUrl, page, marks, selectedKey, onSelectMark, hint }: PdfPreviewProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const textLayerRef = useRef<HTMLDivElement | null>(null);
   const stageRef = useRef<HTMLDivElement | null>(null);
@@ -189,7 +220,8 @@ export function PdfPreview({ pdfUrl, page, quote, hint }: PdfPreviewProps) {
         await textLayer.render();
         if (cancelled) return;
 
-        const firstHl = quote ? highlightQuote(textLayerDiv, quote) : null;
+        const onThisPage = marks.filter((m) => m.page === targetPage);
+        const firstHl = highlightMarks(textLayerDiv, onThisPage, selectedKey);
         if (firstHl && wrapRef.current) {
           const wrap = wrapRef.current;
           // rAF so layout is settled before measuring; only the PDF panel scrolls.
@@ -206,7 +238,7 @@ export function PdfPreview({ pdfUrl, page, quote, hint }: PdfPreviewProps) {
     return () => {
       cancelled = true;
     };
-  }, [pdfUrl, shownPage, quote]);
+  }, [pdfUrl, shownPage, marks, selectedKey]);
 
   if (!pdfUrl) {
     return (
@@ -218,6 +250,14 @@ export function PdfPreview({ pdfUrl, page, quote, hint }: PdfPreviewProps) {
 
   const canPrev = shownPage !== null && shownPage > 1;
   const canNext = shownPage !== null && shownPage < pageCount;
+  const selectedQuote = marks.find((m) => m.key === selectedKey)?.quote ?? null;
+
+  function handleLayerClick(e: MouseEvent<HTMLDivElement>) {
+    if (!onSelectMark) return;
+    const span = (e.target as HTMLElement).closest('span[data-mark-key]') as HTMLElement | null;
+    const key = span?.dataset.markKey;
+    if (key) onSelectMark(key);
+  }
 
   return (
     <div className="pdf-preview">
@@ -238,7 +278,7 @@ export function PdfPreview({ pdfUrl, page, quote, hint }: PdfPreviewProps) {
       <div className="pdf-canvas-wrap" ref={wrapRef}>
         <div className="pdf-stage" ref={stageRef}>
           <canvas ref={canvasRef} aria-label={`PDF page ${shownPage} of ${pageCount}`} />
-          <div className="textLayer" ref={textLayerRef} aria-hidden="true" />
+          <div className="textLayer" ref={textLayerRef} aria-hidden="true" onClick={handleLayerClick} />
         </div>
       </div>
       {error && (
@@ -246,9 +286,9 @@ export function PdfPreview({ pdfUrl, page, quote, hint }: PdfPreviewProps) {
           {error}
         </div>
       )}
-      {quote && (
+      {selectedQuote && (
         <div className="pdf-quote">
-          &ldquo;{quote}&rdquo;
+          &ldquo;{selectedQuote}&rdquo;
           <div className="quote-meta">Model&rsquo;s evidence quote</div>
         </div>
       )}
