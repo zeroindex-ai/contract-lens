@@ -70,6 +70,10 @@ function dense(s: string): string {
 
 const HL_CLASSES = ['hl', 'hl-selected'];
 
+const ZOOM_MIN = 0.5;
+const ZOOM_MAX = 3;
+const ZOOM_STEP = 0.25;
+
 /**
  * Highlight every supplied citation's spans in the text layer and tag them with
  * the citation key so clicks can map back to a field. The selected citation
@@ -142,6 +146,9 @@ export function PdfPreview({ pdfUrl, page, marks, selectedKey, onSelectMark, hin
   const wrapRef = useRef<HTMLDivElement | null>(null);
   const [pageCount, setPageCount] = useState<number>(0);
   const [error, setError] = useState<string | null>(null);
+  // Zoom multiplies the fit-to-width scale. >1 makes the canvas wider than the
+  // wrap, which the wrap's overflow:auto turns into a horizontal scrollbar.
+  const [zoom, setZoom] = useState(1);
 
   // `shownPage` mirrors `page` unless the user navigated manually. Prop changes
   // reset the override during render (not in an effect — avoids React 19's
@@ -150,6 +157,7 @@ export function PdfPreview({ pdfUrl, page, marks, selectedKey, onSelectMark, hin
   const [lastPropPage, setLastPropPage] = useState<number | null>(page);
   const [lastPdfUrl, setLastPdfUrl] = useState<string | null>(pdfUrl);
   if (lastPropPage !== page || lastPdfUrl !== pdfUrl) {
+    if (lastPdfUrl !== pdfUrl) setZoom(1); // reset zoom when a new document loads
     setLastPropPage(page);
     setLastPdfUrl(pdfUrl);
     setShownPage(page);
@@ -182,7 +190,8 @@ export function PdfPreview({ pdfUrl, page, marks, selectedKey, onSelectMark, hin
         // the PDF's natural width) so display size == text-layer size exactly.
         const containerWidth = (stage.parentElement?.clientWidth ?? stage.clientWidth) || 480;
         const unscaled = pageObj.getViewport({ scale: 1 });
-        const scale = containerWidth / unscaled.width;
+        // Fit-to-width at zoom 1; zoom multiplies, overflowing the wrap (→ scroll).
+        const scale = (containerWidth / unscaled.width) * zoom;
         const viewport = pageObj.getViewport({ scale });
 
         // ── canvas (page image), backing store at DPR for crispness ──
@@ -230,7 +239,7 @@ export function PdfPreview({ pdfUrl, page, marks, selectedKey, onSelectMark, hin
     return () => {
       cancelled = true;
     };
-  }, [pdfUrl, shownPage, marks, selectedKey]);
+  }, [pdfUrl, shownPage, marks, selectedKey, zoom]);
 
   if (!pdfUrl) {
     return (
@@ -267,6 +276,34 @@ export function PdfPreview({ pdfUrl, page, marks, selectedKey, onSelectMark, hin
           </button>
         </div>
         {hint && <span style={{ color: 'var(--warn)' }}>{hint}</span>}
+        <div className="zoom" aria-label="Zoom">
+          <button
+            type="button"
+            onClick={() => setZoom((z) => Math.max(ZOOM_MIN, +(z - ZOOM_STEP).toFixed(2)))}
+            disabled={zoom <= ZOOM_MIN}
+            aria-label="Zoom out"
+          >
+            &minus;
+          </button>
+          <button
+            type="button"
+            className="pct"
+            onClick={() => setZoom(1)}
+            disabled={zoom === 1}
+            title="Reset to 100%"
+            aria-label="Reset zoom to 100%"
+          >
+            {Math.round(zoom * 100)}%
+          </button>
+          <button
+            type="button"
+            onClick={() => setZoom((z) => Math.min(ZOOM_MAX, +(z + ZOOM_STEP).toFixed(2)))}
+            disabled={zoom >= ZOOM_MAX}
+            aria-label="Zoom in"
+          >
+            +
+          </button>
+        </div>
       </div>
       <div className="citation-hint">
         {onPageCount > 0 ? (

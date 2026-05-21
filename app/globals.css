@@ -554,11 +554,35 @@ body {
   opacity: 0.4;
   cursor: not-allowed;
 }
+.pdf-preview .page-bar .zoom {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+}
+/* The percentage doubles as the reset-to-100% control (click it) so we don't
+   add a separate button and crowd the bar. Styled as plain text, not a button. */
+.pdf-preview .page-bar .zoom .pct {
+  min-width: 40px;
+  text-align: center;
+  border: none;
+  background: transparent;
+  padding: 2px 4px;
+  color: var(--muted);
+  cursor: pointer;
+}
+.pdf-preview .page-bar .zoom .pct:hover {
+  color: var(--ink);
+}
+.pdf-preview .page-bar .zoom .pct:disabled {
+  cursor: default;
+  opacity: 1;
+}
 .pdf-canvas-wrap {
   border: 1px solid var(--line);
   border-radius: 6px;
-  overflow-y: auto;
-  overflow-x: hidden;
+  /* both axes: vertical always, horizontal appears when zoomed past fit-width */
+  overflow: auto;
   scrollbar-gutter: stable;
   background: #fff;
   /* Cap to the viewport so the whole sticky panel (sticky-top 88 + page-bar +
@@ -604,18 +628,16 @@ body {
    the canvas because the text layer is its own stacking context (z-index), so
    we use alpha instead. */
 .textLayer span.hl {
-  background: rgba(250, 204, 21, 0.42);
+  background: rgba(253, 224, 71, 0.24);
   border-radius: 2px;
   cursor: pointer;
   pointer-events: auto;
 }
-/* The currently-selected citation gets a ring so it stands out among the other
-   highlights on the page. The ring is offset OUTWARD so it sits in the margin
-   around the text instead of overlapping the edge glyphs (an offset-0 outline
-   clips the first/last letters of the quote). */
+/* The currently-selected citation is distinguished by a different fill color
+   (on-brand violet) rather than a border — a ring with any offset bleeds into
+   the lines above/below on tightly-spaced text. Declared after .hl so it wins. */
 .textLayer span.hl-selected {
-  outline: 1.5px solid var(--accent-1);
-  outline-offset: 2px;
+  background: rgba(124, 58, 237, 0.26);
 }
 .pdf-quote {
   margin-top: 12px;

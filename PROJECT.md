@@ -88,8 +88,9 @@ Load-bearing decisions, documented because the *why* often outlasts the *what*.
                                                    left  = fields grouped by section
                                                    right = PDF page (pdfjs canvas + text layer); every
                                                            citation on the visible page is highlighted at
-                                                           once, colored by confidence band, the selected
-                                                           one ringed — click a highlight to select its field
+                                                           once (yellow), the selected one filled violet;
+                                                           zoom in/out with horizontal scroll; click a
+                                                           highlight to select its field
 ```
 
 ### Verification — the core idea
