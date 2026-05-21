@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState, type MouseEvent } from 'react';
 import { normalize } from '@/lib/match';
-import type { ConfidenceBand } from './confidence';
 import type { CitationMark } from './marks';
 
 /**
@@ -32,13 +31,6 @@ export interface PdfPreviewProps {
   /** Optional human-readable hint (e.g. "wrong page" / "not found"). */
   hint?: string | null;
 }
-
-const BAND_CLASS: Record<ConfidenceBand, string> = {
-  green: 'hl-green',
-  amber: 'hl-amber',
-  red: 'hl-red',
-  gray: 'hl-amber',
-};
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 let pdfjsPromise: Promise<any> | null = null;
@@ -76,13 +68,13 @@ function dense(s: string): string {
   return normalize(s).replace(/\s+/g, '');
 }
 
-const HL_CLASSES = ['hl', 'hl-green', 'hl-amber', 'hl-red', 'hl-selected'];
+const HL_CLASSES = ['hl', 'hl-selected'];
 
 /**
- * Highlight every supplied citation's spans in the text layer, each colored by
- * its confidence band, and tag them with the citation key so clicks can map
- * back to a field. The selected citation also gets the `hl-selected` ring; its
- * first span is returned so the caller can scroll it into view.
+ * Highlight every supplied citation's spans in the text layer and tag them with
+ * the citation key so clicks can map back to a field. The selected citation
+ * also gets the `hl-selected` ring; its first span is returned so the caller
+ * can scroll it into view.
  *
  * Both sides are dense-normalized (lowercase, quotes/dashes folded, ALL
  * whitespace removed) so PDF extraction quirks and arbitrary span splits don't
@@ -119,7 +111,7 @@ function highlightMarks(
     const isSelected = mark.key === selectedKey;
     for (const r of ranges) {
       if (r.start < qEnd && r.end > idx) {
-        r.el.classList.add('hl', BAND_CLASS[mark.band]);
+        r.el.classList.add('hl');
         r.el.dataset.markKey = mark.key;
         if (isSelected) {
           r.el.classList.add('hl-selected');

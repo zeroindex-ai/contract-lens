@@ -598,28 +598,21 @@ body {
   color: transparent;
 }
 /* Citation highlights. Every citation that resolves to the visible page is
-   highlighted at once, colored by confidence band, so a page reads as a
-   trust map. Translucent fills so the black canvas glyphs show straight
-   through — mix-blend-mode can't reach the canvas because the text layer is
-   its own stacking context (z-index), so we use alpha instead. */
+   highlighted at once in a natural highlighter yellow; verification status is
+   carried by the left-pane chips, not the highlight color. Translucent fill so
+   the black canvas glyphs show straight through — mix-blend-mode can't reach
+   the canvas because the text layer is its own stacking context (z-index), so
+   we use alpha instead. */
 .textLayer span.hl {
+  background: rgba(250, 204, 21, 0.42);
   border-radius: 2px;
   cursor: pointer;
   pointer-events: auto;
 }
-.textLayer span.hl-green {
-  background: rgba(22, 163, 74, 0.26);
-}
-.textLayer span.hl-amber {
-  background: rgba(180, 83, 9, 0.3);
-}
-.textLayer span.hl-red {
-  background: rgba(190, 18, 66, 0.26);
-}
-/* The currently-selected citation: same band fill, plus a ring so it stands
-   out among the other highlights on the page. The ring is offset OUTWARD so it
-   sits in the margin around the text instead of overlapping the edge glyphs
-   (an offset-0 outline clips the first/last letters of the quote). */
+/* The currently-selected citation gets a ring so it stands out among the other
+   highlights on the page. The ring is offset OUTWARD so it sits in the margin
+   around the text instead of overlapping the edge glyphs (an offset-0 outline
+   clips the first/last letters of the quote). */
 .textLayer span.hl-selected {
   outline: 1.5px solid var(--accent-1);
   outline-offset: 2px;

@@ -1,10 +1,17 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { VerifiedContractExtraction } from '@/lib/verify';
 import { SamplePicker, type SampleManifestEntry } from './SamplePicker';
 import { UploadZone } from './UploadZone';
 import { ExtractionViewer, type ExtractionMetadataShape } from './ExtractionViewer';
+import {
+  saveSession,
+  loadSession,
+  clearSession,
+  arrayBufferToBase64,
+  base64ToBlob,
+} from './session-store';
 
 export interface DemoShellProps {
   samples: SampleManifestEntry[];
@@ -38,6 +45,7 @@ export function DemoShell({ samples }: DemoShellProps) {
         extraction,
         metadata: { page_count: sample.page_count },
       });
+      saveSession({ kind: 'sample', sampleId: sample.id });
     } catch (err) {
       setView({ kind: 'error', message: err instanceof Error ? err.message : 'Failed to load sample' });
     }
@@ -74,6 +82,19 @@ export function DemoShell({ samples }: DemoShellProps) {
         extraction: body.extraction,
         metadata: body.metadata,
       });
+      // Persist so a refresh restores the viewer without a second extraction call.
+      try {
+        const buf = await file.arrayBuffer();
+        saveSession({
+          kind: 'upload',
+          sourceLabel: `${file.name} · upload`,
+          extraction: body.extraction,
+          metadata: body.metadata,
+          pdfBase64: arrayBufferToBase64(buf),
+        });
+      } catch {
+        // Couldn't read/encode the file for persistence — non-fatal.
+      }
     } catch (err) {
       URL.revokeObjectURL(pdfUrl);
       setView({ kind: 'error', message: err instanceof Error ? err.message : 'Network error' });
@@ -81,8 +102,34 @@ export function DemoShell({ samples }: DemoShellProps) {
   }
 
   function reset() {
+    clearSession();
     setView({ kind: 'initial' });
   }
+
+  // Restore the last-viewed document on mount so a refresh keeps the user on the
+  // viewer (selection resets to default — only the document is persisted). This
+  // is a deliberate one-time post-hydration restore: sessionStorage is
+  // client-only and the sample path is async, so it can't be render-time state.
+  /* eslint-disable react-hooks/set-state-in-effect -- intentional one-shot restore of the persisted document */
+  useEffect(() => {
+    const saved = loadSession();
+    if (!saved) return;
+    if (saved.kind === 'sample') {
+      const sample = samples.find((s) => s.id === saved.sampleId);
+      if (sample) void pickSample(sample);
+      return;
+    }
+    const pdfUrl = URL.createObjectURL(base64ToBlob(saved.pdfBase64));
+    setView({
+      kind: 'extracted',
+      sourceLabel: saved.sourceLabel,
+      pdfUrl,
+      extraction: saved.extraction,
+      metadata: saved.metadata,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   // ─── Render ────────────────────────────────────────────────────────────
 

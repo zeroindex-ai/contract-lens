@@ -62,11 +62,24 @@ test('every citation on the page is highlighted, and clicking one selects its fi
   // The discoverability hint shows the per-page citation count.
   await expect(page.locator('.citation-hint')).toContainText(/\d+ citations? highlighted on this page/);
 
-  // Highlights are band-colored (the clean MSA verifies green).
-  await expect(page.locator('.textLayer span.hl-green').first()).toBeVisible();
+  // Citations are highlighted (yellow) on the page.
+  await expect(page.locator('.textLayer span.hl').first()).toBeVisible();
 
   // Clicking the Term highlight selects the Term row AND gives that highlight the ring.
   await page.locator('.textLayer span[data-mark-key="field:term"]').first().click();
   await expect(page.locator('.field-row.active')).toContainText('Term');
   await expect(page.locator('.textLayer span[data-mark-key="field:term"].hl-selected').first()).toBeVisible();
+});
+
+test('refreshing the viewer keeps the document loaded (no re-upload)', async ({ page }) => {
+  await openSample(page, 'Consulting MSA');
+  await page.reload();
+  // Still on the viewer after refresh — not bounced back to the upload screen.
+  await expect(page.getByRole('button', { name: 'BACK TO SAMPLES' })).toBeVisible();
+  await expect(page.locator('.citations-pane')).toContainText('Meridian Health');
+
+  // "Back to samples" clears the persisted session, so a refresh from home stays home.
+  await page.getByRole('button', { name: 'BACK TO SAMPLES' }).click();
+  await page.reload();
+  await expect(page.getByRole('button', { name: 'BACK TO SAMPLES' })).toHaveCount(0);
 });
