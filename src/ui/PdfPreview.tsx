@@ -207,7 +207,7 @@ export function PdfPreview({ pdfUrl, page, marks, selectedKey, onSelectMark, hin
         if (cancelled) return;
 
         // ── transparent text layer overlay, same dimensions + scale ──
-        textLayerDiv.innerHTML = '';
+        textLayerDiv.replaceChildren();
         textLayerDiv.style.width = `${Math.floor(viewport.width)}px`;
         textLayerDiv.style.height = `${Math.floor(viewport.height)}px`;
         textLayerDiv.style.setProperty('--scale-factor', String(scale));

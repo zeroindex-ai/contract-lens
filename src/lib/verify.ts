@@ -57,6 +57,11 @@ export type VerifiedContractExtraction = {
 /** How far to look beyond the claimed page when the quote isn't found there. */
 const NEIGHBOR_RADIUS = 2;
 
+/** Confidence assigned when the quote is found, but on a different page than the
+ *  model claimed (wrong-page). Low by design — the citation is real but the
+ *  model mis-located it, so the field warrants review. */
+const WRONG_PAGE_CONFIDENCE = 0.4;
+
 /**
  * Verify an extraction against per-page PDF text. `pageTexts` is 0-indexed;
  * the model's `evidence_page` is 1-indexed.
@@ -142,7 +147,7 @@ function locate<T extends object>(
       if (m.strength !== 'none') {
         return {
           ...field,
-          confidence: 0.4,
+          confidence: WRONG_PAGE_CONFIDENCE,
           verified_page: candidate + 1,
           match_quality: 'wrong-page',
         };

@@ -35,12 +35,3 @@ export async function extractPdfText(pdfBuffer: Uint8Array): Promise<PdfTextResu
   const pageTexts = Array.isArray(text) ? text : [text];
   return { pageCount: totalPages, pageTexts };
 }
-
-/**
- * Cheap page-count probe for the upload guard. Delegates to extractPdfText
- * (the cost difference is negligible for a ≤30-page cap).
- */
-export async function pdfPageCount(pdfBuffer: Uint8Array): Promise<number> {
-  const { pageCount } = await extractPdfText(pdfBuffer);
-  return pageCount;
-}
