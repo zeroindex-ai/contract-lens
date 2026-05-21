@@ -146,7 +146,7 @@ Upstream API errors (billing, rate limits, auth) are logged server-side and retu
 
 - **One document type** (contracts) and **one fixed schema**.
 - **Text-based PDFs only** — scans without embedded text are rejected.
-- **Per-IP daily rate limit** (configurable via `RATE_LIMIT_PER_DAY`, default 5) — a failed attempt still consumes a slot (increment precedes validation).
+- **Per-IP daily rate limit** (configurable via `RATE_LIMIT_PER_DAY`, default 25) — atomic check-and-increment (single conditional UPSERT), but a failed attempt still consumes a slot because the increment precedes the guards.
 - **First call per schema is slow** (~20–30s) while strict mode compiles the schema; cached ~24h after.
 - **Basic auth only** on `/admin`; the admin view itself is a placeholder.
 

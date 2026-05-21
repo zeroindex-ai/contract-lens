@@ -50,14 +50,16 @@ function nextUtcMidnight(now: Date = new Date()): string {
 }
 
 /**
- * Check-and-increment in one round trip: if the caller is below the daily
- * limit, increment the counter and return `allowed: true`. If at or above,
- * return `allowed: false` and don't touch the counter.
+ * Atomic check-and-increment in a single statement: insert the row at count=1,
+ * or increment it only while still under the daily limit. When the row is
+ * already at the limit the conditional `DO UPDATE` is a no-op, so `RETURNING`
+ * yields no row and we signal denied without a write.
  *
- * Implementation note: SQLite's UPSERT + WHERE on the conflict lets us do
- * "increment only if count < N" atomically. If the row already has count >= N,
- * the conflict's DO UPDATE clause is skipped by the WHERE, so we end the
- * transaction without a write and signal denied to the caller.
+ * Doing this as one `INSERT … ON CONFLICT DO UPDATE … WHERE count < N RETURNING`
+ * statement is what makes it race-safe: a prior version did a separate
+ * `SELECT` then `INSERT`, so two concurrent requests from one IP could both
+ * read `count = N-1` and both increment, slipping past the cap — the exact
+ * abuse case a public, paid endpoint must resist.
  */
 export async function checkAndIncrement(
   client: Client,
@@ -65,38 +67,26 @@ export async function checkAndIncrement(
   now: Date = new Date()
 ): Promise<RateLimitResult> {
   const day = todayUtc(now);
-
-  // First read the current count so we can decide whether to attempt the
-  // increment. (UPSERT with conditional update is possible but harder to
-  // make portable across libsql versions; this is two round trips but
-  // simpler and the rate-limit table is tiny.)
-  const before = await client.execute({
-    sql: 'SELECT count FROM rate_limits WHERE ip_bucket = ? AND day = ?',
-    args: [ipBucket, day],
-  });
-
-  const currentCount = before.rows[0] ? Number(before.rows[0].count) : 0;
   const limit = effectiveDailyLimit();
 
-  if (currentCount >= limit) {
-    return {
-      allowed: false,
-      remaining: 0,
-      resetsAtUtc: nextUtcMidnight(now),
-    };
-  }
-
-  // Increment (or insert with count=1).
-  await client.execute({
+  const result = await client.execute({
     sql: `INSERT INTO rate_limits (ip_bucket, day, count)
           VALUES (?, ?, 1)
-          ON CONFLICT(ip_bucket, day) DO UPDATE SET count = count + 1`,
-    args: [ipBucket, day],
+          ON CONFLICT(ip_bucket, day) DO UPDATE SET count = count + 1
+            WHERE count < ?
+          RETURNING count`,
+    args: [ipBucket, day, limit],
   });
 
+  // No row returned → the conditional update was a no-op → already at the cap.
+  if (result.rows.length === 0) {
+    return { allowed: false, remaining: 0, resetsAtUtc: nextUtcMidnight(now) };
+  }
+
+  const count = Number(result.rows[0].count);
   return {
     allowed: true,
-    remaining: limit - (currentCount + 1),
+    remaining: Math.max(0, limit - count),
     resetsAtUtc: nextUtcMidnight(now),
   };
 }

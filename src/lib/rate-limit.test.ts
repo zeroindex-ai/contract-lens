@@ -59,6 +59,25 @@ describe('checkAndIncrement', () => {
     expect(Number(row.rows[0].count)).toBe(DAILY_LIMIT);
   });
 
+  it('never exceeds the cap under a concurrent burst (single atomic statement)', async () => {
+    const bucket = bucketIp('1.2.3.4');
+    // Fire more requests than the cap at once. Because check-and-increment is a
+    // single conditional UPSERT, the counter can never be pushed past the limit
+    // — exactly `DAILY_LIMIT` succeed, the rest are denied, and the stored count
+    // lands on the cap (not above it).
+    const results = await Promise.all(
+      Array.from({ length: DAILY_LIMIT + 8 }, () => checkAndIncrement(client, bucket))
+    );
+    expect(results.filter((r) => r.allowed)).toHaveLength(DAILY_LIMIT);
+    expect(results.filter((r) => !r.allowed)).toHaveLength(8);
+
+    const row = await client.execute({
+      sql: 'SELECT count FROM rate_limits WHERE ip_bucket = ?',
+      args: [bucket],
+    });
+    expect(Number(row.rows[0].count)).toBe(DAILY_LIMIT);
+  });
+
   it('tracks IPs independently', async () => {
     const a = bucketIp('1.1.1.1');
     const b = bucketIp('2.2.2.2');
