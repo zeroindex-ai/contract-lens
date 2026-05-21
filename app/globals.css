@@ -518,6 +518,18 @@ body {
   color: var(--muted);
   margin-bottom: 12px;
 }
+/* Discoverability: tells the reader the page is a trust map (all citations
+   highlighted) and how many land here. */
+.pdf-preview .citation-hint {
+  font-size: 11.5px;
+  line-height: 1.4;
+  color: var(--muted-2);
+  margin: -4px 0 12px;
+}
+.pdf-preview .citation-hint .count {
+  color: var(--ink);
+  font-weight: 600;
+}
 .pdf-preview .page-bar .nav {
   display: inline-flex;
   align-items: center;
@@ -605,10 +617,12 @@ body {
   background: rgba(190, 18, 66, 0.26);
 }
 /* The currently-selected citation: same band fill, plus a ring so it stands
-   out among the other highlights on the page. */
+   out among the other highlights on the page. The ring is offset OUTWARD so it
+   sits in the margin around the text instead of overlapping the edge glyphs
+   (an offset-0 outline clips the first/last letters of the quote). */
 .textLayer span.hl-selected {
   outline: 1.5px solid var(--accent-1);
-  outline-offset: 0;
+  outline-offset: 2px;
 }
 .pdf-quote {
   margin-top: 12px;

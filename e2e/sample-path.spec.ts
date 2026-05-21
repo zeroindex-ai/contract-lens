@@ -59,6 +59,9 @@ test('every citation on the page is highlighted, and clicking one selects its fi
   ]);
   expect(keys.length).toBeGreaterThan(1);
 
+  // The discoverability hint shows the per-page citation count.
+  await expect(page.locator('.citation-hint')).toContainText(/\d+ citations? highlighted on this page/);
+
   // Highlights are band-colored (the clean MSA verifies green).
   await expect(page.locator('.textLayer span.hl-green').first()).toBeVisible();
 

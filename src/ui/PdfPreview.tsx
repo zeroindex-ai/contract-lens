@@ -251,6 +251,7 @@ export function PdfPreview({ pdfUrl, page, marks, selectedKey, onSelectMark, hin
   const canPrev = shownPage !== null && shownPage > 1;
   const canNext = shownPage !== null && shownPage < pageCount;
   const selectedQuote = marks.find((m) => m.key === selectedKey)?.quote ?? null;
+  const onPageCount = shownPage === null ? 0 : marks.filter((m) => m.page === shownPage).length;
 
   function handleLayerClick(e: MouseEvent<HTMLDivElement>) {
     if (!onSelectMark) return;
@@ -274,6 +275,18 @@ export function PdfPreview({ pdfUrl, page, marks, selectedKey, onSelectMark, hin
           </button>
         </div>
         {hint && <span style={{ color: 'var(--warn)' }}>{hint}</span>}
+      </div>
+      <div className="citation-hint">
+        {onPageCount > 0 ? (
+          <>
+            <span className="count">
+              {onPageCount} citation{onPageCount === 1 ? '' : 's'}
+            </span>{' '}
+            highlighted on this page &mdash; click any to inspect it
+          </>
+        ) : (
+          'No citations on this page'
+        )}
       </div>
       <div className="pdf-canvas-wrap" ref={wrapRef}>
         <div className="pdf-stage" ref={stageRef}>
