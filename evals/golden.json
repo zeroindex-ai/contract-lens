@@ -81,12 +81,10 @@
           "fields": {
             "term": [],
             "payment_terms": null,
-            "deliverables": [],
             "ip_ownership": [],
             "termination_clause": null,
             "governing_law": ["delaware"],
-            "kill_fee": null,
-            "limitation_of_liability": []
+            "kill_fee": null
           }
         }
       }

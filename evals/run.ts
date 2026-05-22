@@ -32,12 +32,11 @@ async function main(): Promise<void> {
 
   const onlyCategory = process.argv[2] || undefined;
   const limit = process.argv[3] ? parseInt(process.argv[3], 10) : undefined;
-  // A coarse floor, not a quality ceiling. citations_verified is strict — a
-  // single non-verbatim model quote flags the whole contract — and the golden
-  // set is small, so the headline pass rate is noisy. The signal is the
-  // per-contract report (which fields verified, which were flagged), not this
-  // number. Raise it as the golden set grows.
-  const threshold = Number(process.env.EVAL_PASS_THRESHOLD ?? 0.5);
+  // Real bar now that the golden set spans 8 documents across types. 0.75
+  // tolerates the ~1 item that flips on model nondeterminism (borderline field
+  // mappings) while still failing on a genuine regression. The per-contract
+  // report remains the richer signal than this single number.
+  const threshold = Number(process.env.EVAL_PASS_THRESHOLD ?? 0.75);
 
   const report: RunReport = await runEval({
     golden: 'evals/golden.json',

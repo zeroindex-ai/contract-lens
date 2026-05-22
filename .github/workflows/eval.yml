@@ -48,7 +48,7 @@ jobs:
         env:
           # The extraction pipeline is the only thing that needs a secret.
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          EVAL_PASS_THRESHOLD: '0.5'
+          EVAL_PASS_THRESHOLD: '0.75'
         run: |
           if [ -z "$ANTHROPIC_API_KEY" ]; then
             echo "ANTHROPIC_API_KEY secret not configured; skipping eval."
@@ -102,7 +102,7 @@ jobs:
             --in "artifacts/contract-lens/$(basename "$RESULT")" \
             --out public/contract-lens/latest.html \
             --project contract-lens \
-            --threshold 0.5
+            --threshold 0.75
 
           git add public/contract-lens/latest.html
           if git diff --staged --quiet; then
