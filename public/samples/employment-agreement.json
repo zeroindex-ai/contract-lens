@@ -1,0 +1,89 @@
+{
+  "document_type": "Employment Agreement",
+  "summary": "At-will employment of Jordan Rivera by Northwind Analytics as Senior Data Engineer at a $145,000 annual salary, governed by Washington law.",
+  "parties": [
+    {
+      "name": "Northwind Analytics, Inc.",
+      "role": "Employer",
+      "evidence_quote": "Northwind Analytics, Inc., a Delaware corporation",
+      "evidence_page": 1,
+      "confidence": 1,
+      "verified_page": 1,
+      "match_quality": "exact"
+    },
+    {
+      "name": "Jordan Rivera",
+      "role": "Employee",
+      "evidence_quote": "Jordan Rivera, an individual residing in King County, Washington",
+      "evidence_page": 1,
+      "confidence": 1,
+      "verified_page": 1,
+      "match_quality": "normalized"
+    }
+  ],
+  "key_details": [
+    {
+      "label": "Effective date",
+      "value": "July 15, 2026",
+      "evidence_quote": "as of July 15, 2026",
+      "evidence_page": 1,
+      "confidence": 1,
+      "verified_page": 1,
+      "match_quality": "exact"
+    },
+    {
+      "label": "Position",
+      "value": "Senior Data Engineer",
+      "evidence_quote": "employs the Employee as Senior Data Engineer",
+      "evidence_page": 1,
+      "confidence": 1,
+      "verified_page": 1,
+      "match_quality": "exact"
+    },
+    {
+      "label": "Annual salary",
+      "value": "USD $145,000, paid semi-monthly",
+      "evidence_quote": "annual base salary of one hundred forty-five thousand U.S. dollars (USD $145,000)",
+      "evidence_page": 1,
+      "confidence": 1,
+      "verified_page": 1,
+      "match_quality": "normalized"
+    },
+    {
+      "label": "Employment type",
+      "value": "At-will — either party may terminate at any time",
+      "evidence_quote": "meaning that either the Company or the Employee may terminate the employment",
+      "evidence_page": 1,
+      "confidence": 1,
+      "verified_page": 1,
+      "match_quality": "normalized"
+    },
+    {
+      "label": "IP assignment",
+      "value": "Inventions are work made for hire, assigned to the Company",
+      "evidence_quote": "shall be “work made for hire” and the exclusive property of the Company",
+      "evidence_page": 1,
+      "confidence": 1,
+      "verified_page": 1,
+      "match_quality": "normalized"
+    },
+    {
+      "label": "Resignation notice",
+      "value": "Two weeks requested, not required",
+      "evidence_quote": "requested, but not required, to provide two (2) weeks",
+      "evidence_page": 1,
+      "confidence": 1,
+      "verified_page": 1,
+      "match_quality": "exact"
+    },
+    {
+      "label": "Governing law",
+      "value": "Washington",
+      "evidence_quote": "the laws of the State of Washington",
+      "evidence_page": 2,
+      "confidence": 1,
+      "verified_page": 2,
+      "match_quality": "normalized"
+    }
+  ]
+}

@@ -6,19 +6,13 @@
       "name": "Acme Robotics, Inc.",
       "role": "Mutual Party",
       "evidence_quote": "Acme Robotics, Inc., a Delaware corporation",
-      "evidence_page": 1,
-      "confidence": 1,
-      "verified_page": 1,
-      "match_quality": "exact"
+      "evidence_page": 1
     },
     {
       "name": "Globex Partners LLC",
       "role": "Mutual Party",
       "evidence_quote": "Globex Partners LLC, a Massachusetts limited liability company",
-      "evidence_page": 1,
-      "confidence": 1,
-      "verified_page": 1,
-      "match_quality": "normalized"
+      "evidence_page": 1
     }
   ],
   "key_details": [
@@ -26,73 +20,49 @@
       "label": "Effective date",
       "value": "June 1, 2026",
       "evidence_quote": "as of June 1, 2026",
-      "evidence_page": 1,
-      "confidence": 1,
-      "verified_page": 1,
-      "match_quality": "exact"
+      "evidence_page": 1
     },
     {
       "label": "Term",
       "value": "3 years from the Effective Date",
       "evidence_quote": "for a period of three (3) years from the Effective Date",
-      "evidence_page": 1,
-      "confidence": 1,
-      "verified_page": 1,
-      "match_quality": "exact"
+      "evidence_page": 1
     },
     {
       "label": "Confidentiality survival",
       "value": "Obligations survive 5 years after expiration",
       "evidence_quote": "survive expiration for an additional period of five (5) years",
-      "evidence_page": 1,
-      "confidence": 1,
-      "verified_page": 1,
-      "match_quality": "exact"
+      "evidence_page": 1
     },
     {
       "label": "Permitted use",
       "value": "Confidential Information may be used solely for the Purpose",
       "evidence_quote": "use the Confidential Information solely for the Purpose",
-      "evidence_page": 1,
-      "confidence": 1,
-      "verified_page": 1,
-      "match_quality": "exact"
+      "evidence_page": 1
     },
     {
       "label": "IP / license",
       "value": "No license granted to the Recipient",
       "evidence_quote": "No license, by implication or otherwise, is granted to the Recipient",
-      "evidence_page": 1,
-      "confidence": 1,
-      "verified_page": 1,
-      "match_quality": "normalized"
+      "evidence_page": 1
     },
     {
       "label": "Termination",
       "value": "Either party may terminate on 30 days' written notice",
       "evidence_quote": "terminate this Agreement upon thirty (30) days",
-      "evidence_page": 2,
-      "confidence": 1,
-      "verified_page": 2,
-      "match_quality": "exact"
+      "evidence_page": 2
     },
     {
       "label": "Governing law",
       "value": "Delaware",
       "evidence_quote": "the laws of the State of Delaware",
-      "evidence_page": 2,
-      "confidence": 1,
-      "verified_page": 2,
-      "match_quality": "normalized"
+      "evidence_page": 2
     },
     {
       "label": "Liability cap",
       "value": "Aggregate liability capped at USD $1,000",
       "evidence_quote": "shall not exceed one thousand U.S. dollars (USD $1,000)",
-      "evidence_page": 2,
-      "confidence": 1,
-      "verified_page": 2,
-      "match_quality": "exact"
+      "evidence_page": 2
     }
   ]
 }
