@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import type { VerifiedContractExtraction } from '@/lib/verify';
+import type { VerifiedDocumentExtraction } from '@/lib/verify';
 import { db } from '@/db/client';
 import { fmtTs } from '@/lib/format';
 import { summarize } from '@/ui/groups';
@@ -33,7 +33,7 @@ export default async function AdminPage() {
 
   const items = recent.rows.map((r) => {
     const meta = JSON.parse(String(r.metadata_json)) as { model?: string };
-    const extraction = JSON.parse(String(r.extracted_json)) as VerifiedContractExtraction;
+    const extraction = JSON.parse(String(r.extracted_json)) as VerifiedDocumentExtraction;
     return {
       id: String(r.id),
       pageCount: Number(r.page_count),
@@ -63,9 +63,9 @@ export default async function AdminPage() {
                 <th>Source</th>
                 <th>Pages</th>
                 <th>Model</th>
+                <th>Details</th>
                 <th>Verified</th>
                 <th>Review</th>
-                <th>Absent</th>
               </tr>
             </thead>
             <tbody>
@@ -87,6 +87,7 @@ export default async function AdminPage() {
                     <td>{it.source}</td>
                     <td className="num-cell">{it.pageCount}</td>
                     <td className="ts">{it.model}</td>
+                    <td className="num-cell">{it.summary.total}</td>
                     <td className="num-cell" style={{ color: 'var(--accent-go)' }}>
                       {it.summary.verified}
                     </td>
@@ -96,7 +97,6 @@ export default async function AdminPage() {
                     >
                       {it.summary.review}
                     </td>
-                    <td className="num-cell muted-2">{it.summary.notInContract}</td>
                   </tr>
                 ))
               )}

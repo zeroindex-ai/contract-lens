@@ -1,13 +1,12 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import type { VerifiedContractExtraction } from '@/lib/verify';
-import type { ScalarFieldKey } from '@/schema/extraction';
-import { FieldRow, PartiesRow } from './FieldRow';
+import type { MatchQuality, VerifiedDocumentExtraction } from '@/lib/verify';
+import { DetailRow, PartiesRow } from './FieldRow';
 import { PdfPreview } from './PdfPreview';
 import { WarningBanner } from './WarningBanner';
 import { buildCitationMarks } from './marks';
-import { FIELD_GROUPS, summarize } from './groups';
+import { summarize } from './groups';
 
 export interface ExtractionMetadataShape {
   id?: string;
@@ -20,14 +19,14 @@ export interface ExtractionMetadataShape {
 }
 
 export interface ExtractionViewerProps {
-  extraction: VerifiedContractExtraction;
+  extraction: VerifiedDocumentExtraction;
   metadata?: ExtractionMetadataShape;
   pdfUrl: string;
   onClose?: () => void;
   sourceLabel?: string;
 }
 
-type Selection = { kind: 'party'; index: number } | { kind: 'field'; key: ScalarFieldKey } | null;
+type Selection = { kind: 'party'; index: number } | { kind: 'detail'; index: number } | null;
 
 export function ExtractionViewer({
   extraction,
@@ -38,53 +37,40 @@ export function ExtractionViewer({
 }: ExtractionViewerProps) {
   const [selection, setSelection] = useState<Selection>(() => {
     if (extraction.parties.length > 0) return { kind: 'party', index: 0 };
-    for (const g of FIELD_GROUPS) {
-      for (const key of g.fields) {
-        if (extraction[key].evidence_quote !== null) return { kind: 'field', key };
-      }
-    }
+    if (extraction.key_details.length > 0) return { kind: 'detail', index: 0 };
     return null;
   });
 
-  // Every locatable citation (verified on a real page) across the document.
-  // PdfPreview highlights the ones on the visible page so a page reads as a
-  // trust map; clicking a highlight selects that citation. Memoized so its
-  // identity is stable across selection changes (the heavy render keys off it).
   const marks = useMemo(() => buildCitationMarks(extraction), [extraction]);
 
   const selectedKey =
     selection?.kind === 'party'
       ? `party:${selection.index}`
-      : selection?.kind === 'field'
-        ? `field:${selection.key}`
+      : selection?.kind === 'detail'
+        ? `detail:${selection.index}`
         : null;
 
   function selectMark(key: string) {
     if (key.startsWith('party:')) setSelection({ kind: 'party', index: Number(key.slice('party:'.length)) });
-    else if (key.startsWith('field:'))
-      setSelection({ kind: 'field', key: key.slice('field:'.length) as ScalarFieldKey });
+    else if (key.startsWith('detail:'))
+      setSelection({ kind: 'detail', index: Number(key.slice('detail:'.length)) });
   }
 
-  // Resolve the page to show + hint from the current selection.
-  // Key rule: jump to `verified_page` (where the quote actually is) when it
-  // exists, falling back to the model's claimed `evidence_page` only when the
-  // quote wasn't found anywhere — so wrong-page citations land the viewer on
-  // the real location and the highlight can hit.
+  // Resolve the page to show + hint from the current selection. Jump to
+  // verified_page (where the quote actually is) when found, falling back to the
+  // claimed page only when it wasn't — so a wrong-page citation still lands the
+  // viewer on the real location.
   let page: number | null = null;
   let hint: string | null = null;
-  if (selection?.kind === 'party') {
-    const p = extraction.parties[selection.index];
-    page = p.verified_page ?? p.evidence_page;
-    hint = hintFor(p.match_quality, p.evidence_page, p.verified_page);
-  } else if (selection?.kind === 'field') {
-    const f = extraction[selection.key];
-    if (f.match_quality === 'null-field') {
-      page = 1;
-      hint = 'Field not present in this contract';
-    } else {
-      page = f.verified_page ?? f.evidence_page;
-      hint = hintFor(f.match_quality, f.evidence_page, f.verified_page);
-    }
+  const selected =
+    selection?.kind === 'party'
+      ? extraction.parties[selection.index]
+      : selection?.kind === 'detail'
+        ? extraction.key_details[selection.index]
+        : null;
+  if (selected) {
+    page = selected.verified_page ?? selected.evidence_page;
+    hint = hintFor(selected.match_quality, selected.evidence_page, selected.verified_page);
   }
 
   const summary = summarize(extraction);
@@ -97,6 +83,12 @@ export function ExtractionViewer({
         </button>
       )}
       {sourceLabel && <div className="source-line">{sourceLabel}</div>}
+
+      {/* document header */}
+      <div className="doc-header">
+        <h1 className="doc-type">{extraction.document_type}</h1>
+        {extraction.summary && <p className="doc-summary">{extraction.summary}</p>}
+      </div>
 
       {/* summary strip */}
       <div className="summary-strip">
@@ -112,23 +104,16 @@ export function ExtractionViewer({
           </span>
           <span className="k">needs review</span>
         </div>
-        <div className="stat">
-          <span className="n" style={{ color: 'var(--muted-2)' }}>
-            {summary.notInContract}
-          </span>
-          <span className="k">not in contract</span>
-        </div>
         <div className="summary-meter" aria-hidden="true">
           <span style={{ flex: summary.verified, background: 'var(--accent-go)' }}></span>
           <span style={{ flex: summary.review, background: 'var(--error)' }}></span>
-          <span style={{ flex: summary.notInContract, background: 'var(--muted-2)' }}></span>
         </div>
         <div className="summary-divider"></div>
         <div className="summary-meta">
           {metadata?.model && <span>{metadata.model}</span>}
           <span>
             {metadata?.page_count ? `${metadata.page_count} pages · ` : ''}
-            {summary.total} fields
+            {summary.total} details
           </span>
         </div>
       </div>
@@ -144,36 +129,37 @@ export function ExtractionViewer({
         <span className="legend-item">
           <span className="legend-dot dot-red"></span> not verified
         </span>
-        <span className="legend-item">
-          <span className="legend-dot dot-gray"></span> not in contract
-        </span>
       </div>
 
       <WarningBanner verified={extraction} />
 
       <div className="viewer-split">
         <div className="citations-pane">
-          {FIELD_GROUPS.map((g) => (
-            <div className="field-group" key={g.title}>
-              <div className="group-title">{g.title}</div>
-              {g.includesParties && (
-                <PartiesRow
-                  parties={extraction.parties}
-                  selectedIndex={selection?.kind === 'party' ? selection.index : null}
-                  onSelect={(i) => setSelection({ kind: 'party', index: i })}
+          <div className="field-group">
+            <div className="group-title">Parties</div>
+            <PartiesRow
+              parties={extraction.parties}
+              selectedIndex={selection?.kind === 'party' ? selection.index : null}
+              onSelect={(i) => setSelection({ kind: 'party', index: i })}
+            />
+          </div>
+          <div className="field-group">
+            <div className="group-title">Key details</div>
+            {extraction.key_details.length === 0 ? (
+              <div className="field-row" style={{ cursor: 'default' }}>
+                <div className="field-value null">No key details extracted</div>
+              </div>
+            ) : (
+              extraction.key_details.map((detail, i) => (
+                <DetailRow
+                  key={`${detail.label}-${i}`}
+                  detail={detail}
+                  selected={selection?.kind === 'detail' && selection.index === i}
+                  onSelect={() => setSelection({ kind: 'detail', index: i })}
                 />
-              )}
-              {g.fields.map((key) => (
-                <FieldRow
-                  key={key}
-                  fieldKey={key}
-                  field={extraction[key]}
-                  selected={selection?.kind === 'field' && selection.key === key}
-                  onSelect={() => setSelection({ kind: 'field', key })}
-                />
-              ))}
-            </div>
-          ))}
+              ))
+            )}
+          </div>
         </div>
 
         <PdfPreview
@@ -191,14 +177,12 @@ export function ExtractionViewer({
   );
 }
 
-function hintFor(matchQuality: string, claimed: number | null, verified: number | null): string | null {
+function hintFor(matchQuality: MatchQuality, claimed: number, verified: number | null): string | null {
   switch (matchQuality) {
     case 'wrong-page':
       return verified !== null ? `Quote claimed on p. ${claimed}, found on p. ${verified}` : 'Quote on a different page';
     case 'not-found':
       return 'Quote not found in the PDF';
-    case 'incomplete':
-      return 'Field partially returned';
     default:
       return null;
   }

@@ -1,33 +1,18 @@
-import type { VerifiedContractExtraction } from '@/lib/verify';
+import type { VerifiedDocumentExtraction } from '@/lib/verify';
 import { REVIEW_THRESHOLD } from './confidence';
 
-/** Count fields that fall into the red band (couldn't be verified at all). */
-export function countUnverifiedFields(verified: VerifiedContractExtraction): {
+/** Count cited items (parties + key details) that couldn't be verified. */
+export function countUnverifiedFields(verified: VerifiedDocumentExtraction): {
   unverified: number;
   total: number;
 } {
-  const allFields = [
-    ...verified.parties,
-    verified.effective_date,
-    verified.term,
-    verified.payment_terms,
-    verified.deliverables,
-    verified.ip_ownership,
-    verified.termination_clause,
-    verified.governing_law,
-    verified.kill_fee,
-    verified.limitation_of_liability,
-  ];
-  // null-field is fine (model said "not in contract"). Anything else below
-  // REVIEW_THRESHOLD is a failed-verification field.
-  const unverified = allFields.filter(
-    (f) => f.match_quality !== 'null-field' && f.confidence < REVIEW_THRESHOLD
-  ).length;
-  return { unverified, total: allFields.length };
+  const all = [...verified.parties, ...verified.key_details];
+  const unverified = all.filter((f) => f.confidence < REVIEW_THRESHOLD).length;
+  return { unverified, total: all.length };
 }
 
 export interface WarningBannerProps {
-  verified: VerifiedContractExtraction;
+  verified: VerifiedDocumentExtraction;
 }
 
 export function WarningBanner({ verified }: WarningBannerProps) {
@@ -40,7 +25,7 @@ export function WarningBanner({ verified }: WarningBannerProps) {
         !
       </span>
       <div>
-        <strong>{`${unverified} of ${total} fields couldn’t be verified against the source PDF.`}</strong>{' '}
+        <strong>{`${unverified} of ${total} details couldn’t be verified against the source PDF.`}</strong>{' '}
         Review the flagged rows below before relying on this extraction. Click a row to see what the model
         claimed and where the verification looked.
       </div>

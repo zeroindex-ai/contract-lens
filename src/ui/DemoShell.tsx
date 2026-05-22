@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import type { VerifiedContractExtraction } from '@/lib/verify';
+import type { VerifiedDocumentExtraction } from '@/lib/verify';
 import { SamplePicker, type SampleManifestEntry } from './SamplePicker';
 import { UploadZone } from './UploadZone';
 import { ExtractionViewer, type ExtractionMetadataShape } from './ExtractionViewer';
@@ -25,7 +25,7 @@ type ViewState =
       kind: 'extracted';
       sourceLabel: string;
       pdfUrl: string;
-      extraction: VerifiedContractExtraction;
+      extraction: VerifiedDocumentExtraction;
       metadata?: ExtractionMetadataShape;
     };
 
@@ -37,7 +37,7 @@ export function DemoShell({ samples }: DemoShellProps) {
     try {
       const res = await fetch(sample.json_path);
       if (!res.ok) throw new Error(`Failed to load sample (${res.status})`);
-      const extraction = (await res.json()) as VerifiedContractExtraction;
+      const extraction = (await res.json()) as VerifiedDocumentExtraction;
       setView({
         kind: 'extracted',
         sourceLabel: `${sample.title} · sample`,
@@ -64,7 +64,7 @@ export function DemoShell({ samples }: DemoShellProps) {
       const res = await fetch('/api/extract', { method: 'POST', body: form });
       const body = (await res.json()) as
         | {
-            extraction: VerifiedContractExtraction;
+            extraction: VerifiedDocumentExtraction;
             metadata: ExtractionMetadataShape;
           }
         | { error: { code: string; message: string } };
@@ -150,11 +150,12 @@ export function DemoShell({ samples }: DemoShellProps) {
       <div className="label mb-3">Lens</div>
       <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Document intelligence &mdash; verified.</h1>
       <p className="mt-4 muted text-base leading-relaxed max-w-5xl">
-        Upload a contract PDF or pick a sample below. Every extracted field is checked against the source
-        page &mdash; anything we can&rsquo;t verify is flagged, not silently passed through.
+        Upload any official document &mdash; a contract, offer letter, invoice, policy &mdash; or pick a
+        sample below. The tool pulls out the meaningful details and checks every one against the source
+        page; anything it can&rsquo;t verify is flagged, not silently passed through.
       </p>
 
-      <h2 className="label mb-2 mt-12">Upload a contract</h2>
+      <h2 className="label mb-2 mt-12">Upload a document</h2>
       <UploadZone onFile={uploadFile} disabled={view.kind === 'loading'} />
 
       {view.kind === 'loading' && (

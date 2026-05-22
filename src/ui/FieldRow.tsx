@@ -1,55 +1,51 @@
 'use client';
 
-import type { VerifiedField, VerifiedParty } from '@/lib/verify';
+import type { Verified, VerifiedKeyDetail, VerifiedParty } from '@/lib/verify';
 import { ConfidenceChip } from './ConfidenceChip';
-import { FIELD_LABELS, type ScalarFieldKey } from '@/schema/extraction';
 
 /* -------------------------------------------------------------------------- */
-/* Scalar field row                                                           */
+/* Citation footer (shared by detail + party rows)                            */
 /* -------------------------------------------------------------------------- */
 
-export interface FieldRowProps {
-  fieldKey: ScalarFieldKey;
-  field: VerifiedField;
-  selected: boolean;
-  onSelect: () => void;
-}
-
-function FieldFoot({ field }: { field: VerifiedField }) {
-  if (field.match_quality === 'null-field') return null;
+function CitationFoot({ item }: { item: Verified & { evidence_page: number } }) {
   return (
     <div className="field-foot">
-      {field.match_quality === 'wrong-page' && field.verified_page !== null ? (
+      {item.match_quality === 'wrong-page' && item.verified_page !== null ? (
         <>
-          <span>claimed p. {field.evidence_page}</span>
-          <span className="foot-warn">&rarr; found on p. {field.verified_page}</span>
+          <span>claimed p. {item.evidence_page}</span>
+          <span className="foot-warn">&rarr; found on p. {item.verified_page}</span>
         </>
-      ) : field.match_quality === 'not-found' ? (
+      ) : item.match_quality === 'not-found' ? (
         <>
-          <span>cited p. {field.evidence_page}</span>
+          <span>cited p. {item.evidence_page}</span>
           <span className="foot-error">quote not found in PDF</span>
         </>
-      ) : field.match_quality === 'incomplete' ? (
-        <span className="foot-warn">incomplete extraction</span>
       ) : (
-        <span>p. {field.evidence_page}</span>
+        <span>p. {item.evidence_page}</span>
       )}
     </div>
   );
 }
 
-export function FieldRow({ fieldKey, field, selected, onSelect }: FieldRowProps) {
-  const isNullField = field.match_quality === 'null-field';
+/* -------------------------------------------------------------------------- */
+/* Key-detail row                                                             */
+/* -------------------------------------------------------------------------- */
+
+export interface DetailRowProps {
+  detail: VerifiedKeyDetail;
+  selected: boolean;
+  onSelect: () => void;
+}
+
+export function DetailRow({ detail, selected, onSelect }: DetailRowProps) {
   return (
     <button type="button" className={`field-row ${selected ? 'active' : ''}`} onClick={onSelect}>
       <div className="field-head">
-        <span className="field-name">{FIELD_LABELS[fieldKey]}</span>
-        <ConfidenceChip confidence={field.confidence} matchQuality={field.match_quality} />
+        <span className="field-name">{detail.label}</span>
+        <ConfidenceChip confidence={detail.confidence} matchQuality={detail.match_quality} />
       </div>
-      <div className={`field-value ${isNullField ? 'null' : ''}`}>
-        {isNullField ? 'Not in this contract' : (field.value ?? '—')}
-      </div>
-      <FieldFoot field={field} />
+      <div className="field-value">{detail.value}</div>
+      <CitationFoot item={detail} />
     </button>
   );
 }
@@ -89,21 +85,7 @@ export function PartiesRow({ parties, selectedIndex, onSelect }: PartiesRowProps
             </span>
             <ConfidenceChip confidence={p.confidence} matchQuality={p.match_quality} />
           </div>
-          <div className="field-foot">
-            {p.match_quality === 'wrong-page' && p.verified_page !== null ? (
-              <>
-                <span>claimed p. {p.evidence_page}</span>
-                <span className="foot-warn">&rarr; found on p. {p.verified_page}</span>
-              </>
-            ) : p.match_quality === 'not-found' ? (
-              <>
-                <span>cited p. {p.evidence_page}</span>
-                <span className="foot-error">quote not found in PDF</span>
-              </>
-            ) : (
-              <span>p. {p.evidence_page}</span>
-            )}
-          </div>
+          <CitationFoot item={p} />
         </button>
       ))}
     </>

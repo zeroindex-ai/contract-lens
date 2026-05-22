@@ -214,6 +214,22 @@ body {
   color: var(--muted-2);
   margin: 0 0 18px;
 }
+.doc-header {
+  margin: 0 0 18px;
+}
+.doc-header .doc-type {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+.doc-header .doc-summary {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.5;
+  max-width: 70ch;
+}
 .summary-strip {
   display: flex;
   flex-wrap: wrap;

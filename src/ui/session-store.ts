@@ -1,4 +1,4 @@
-import type { VerifiedContractExtraction } from '@/lib/verify';
+import type { VerifiedDocumentExtraction } from '@/lib/verify';
 import type { ExtractionMetadataShape } from './ExtractionViewer';
 
 /**
@@ -21,7 +21,7 @@ export type PersistedSession =
   | {
       kind: 'upload';
       sourceLabel: string;
-      extraction: VerifiedContractExtraction;
+      extraction: VerifiedDocumentExtraction;
       metadata?: ExtractionMetadataShape;
       pdfBase64: string;
     };
