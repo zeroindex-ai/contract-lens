@@ -32,15 +32,24 @@ export default async function AdminPage() {
   const today = Number(todayRes.rows[0]?.n ?? 0);
 
   const items = recent.rows.map((r) => {
-    const meta = JSON.parse(String(r.metadata_json)) as { model?: string };
-    const extraction = JSON.parse(String(r.extracted_json)) as VerifiedDocumentExtraction;
+    // Parse defensively: a single corrupt/legacy row must not 500 the whole list.
+    let model = '—';
+    let summary = { total: 0, verified: 0, review: 0 };
+    try {
+      const meta = JSON.parse(String(r.metadata_json)) as { model?: string };
+      const extraction = JSON.parse(String(r.extracted_json)) as VerifiedDocumentExtraction;
+      model = meta.model ?? '—';
+      summary = summarize(extraction);
+    } catch {
+      // leave the placeholders (model "—", zeroed counts)
+    }
     return {
       id: String(r.id),
       pageCount: Number(r.page_count),
       source: String(r.source),
-      model: meta.model ?? '—',
+      model,
       when: fmtTs(Number(r.created_at)),
-      summary: summarize(extraction),
+      summary,
     };
   });
 

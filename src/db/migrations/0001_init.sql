@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS extractions (
   sha256          TEXT NOT NULL,
   page_count      INTEGER NOT NULL,
   source          TEXT NOT NULL,            -- 'upload' | 'sample:<id>'
-  extracted_json  TEXT NOT NULL,            -- VerifiedContractExtraction as JSON
+  extracted_json  TEXT NOT NULL,            -- VerifiedDocumentExtraction as JSON
   metadata_json   TEXT NOT NULL,            -- ExtractionMetadata as JSON
   trace_id        TEXT,                     -- request_id from Anthropic, also the trace event id
   ip_bucket       TEXT NOT NULL,

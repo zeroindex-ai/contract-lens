@@ -1,8 +1,8 @@
 /**
  * Client-side export of a verified extraction into two "lookup" artifacts:
  *
- *   - CSV  — a flat table for spreadsheets (one row per party / key detail),
- *            with a small self-describing preamble (document type + summary).
+ *   - Excel (.xlsx) — a styled table for spreadsheets (one row per party / key
+ *            detail), with a merged document-type + summary preamble.
  *   - PDF  — a compact one/two-page reference sheet a person can keep alongside
  *            the source document. Every value carries its source page + a
  *            verification mark, so the lookup sheet inherits the tool's core
@@ -14,7 +14,7 @@
  */
 
 import type { VerifiedDocumentExtraction, Verified } from '@/lib/verify';
-import { bandFor, bandLabel } from './confidence';
+import { bandFor, bandLabel, REVIEW_THRESHOLD } from './confidence';
 
 /** Page to cite: where the quote was actually found, falling back to the claimed page. */
 function citedPage(item: Verified & { evidence_page: number }): number {
@@ -209,7 +209,9 @@ export async function downloadPdf(extraction: VerifiedDocumentExtraction): Promi
     y += 12;
   }
 
-  const verified = [...extraction.parties, ...extraction.key_details].filter((i) => i.confidence >= 0.5).length;
+  const verified = [...extraction.parties, ...extraction.key_details].filter(
+    (i) => i.confidence >= REVIEW_THRESHOLD
+  ).length;
   const total = extraction.parties.length + extraction.key_details.length;
   const flagged = total - verified;
 

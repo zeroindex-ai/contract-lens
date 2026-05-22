@@ -25,9 +25,10 @@ import { persistExtraction } from '@/lib/persist';
  *
  * Pipeline:
  *   1. clientIp → ipBucket  (no raw IPs persisted)
- *   2. checkAndIncrement     → 429 if over daily cap
- *   3. parse multipart       → reject if no file part
- *   4. assertMime / assertSize / assertMagicBytes  → 4xx on guard failure
+ *   2. parse multipart       → reject if no file part
+ *   3. assertMime / assertSize / assertMagicBytes  → 4xx on guard failure
+ *                              (cheap, so they run before the rate-limit slot)
+ *   4. checkAndIncrement     → 429 if over daily cap
  *   5. extractPdfText        → also yields pageCount for the page-count guard
  *   6. assertPageCount / assertHasExtractableText
  *   7. extract()             → Anthropic Messages, returns typed extraction + metadata
@@ -54,7 +55,27 @@ export async function POST(req: Request): Promise<NextResponse> {
   let pageCount = 0;
 
   try {
-    // 1+2. Rate limit before anything expensive.
+    // 1. Parse multipart.
+    const form = await req.formData().catch(() => null);
+    if (!form) {
+      logExtract({ pageCount: 0, outcome: 'bad_request' });
+      return errorResponse(400, 'BAD_REQUEST', 'Expected multipart/form-data with a `file` part');
+    }
+    const file = form.get('file');
+    if (!(file instanceof File)) {
+      logExtract({ pageCount: 0, outcome: 'bad_request' });
+      return errorResponse(400, 'BAD_REQUEST', 'Missing `file` part in multipart body');
+    }
+
+    // 2. Cheap guards (MIME / size / magic bytes). These are essentially free,
+    //    so they run BEFORE the rate-limit increment — a junk or oversized
+    //    upload is rejected without consuming the visitor's daily slot.
+    assertMime(file.type);
+    assertSize(file.size);
+    const buffer = new Uint8Array(await file.arrayBuffer());
+    assertMagicBytes(buffer);
+
+    // 3. Rate limit — gates everything expensive (PDF parse + the LLM call).
     const rate = await checkAndIncrement(db(), ipBucket);
     if (!rate.allowed) {
       logExtract({ pageCount: 0, outcome: 'rate_limited' });
@@ -69,25 +90,7 @@ export async function POST(req: Request): Promise<NextResponse> {
       );
     }
 
-    // 3. Parse multipart.
-    const form = await req.formData().catch(() => null);
-    if (!form) {
-      logExtract({ pageCount: 0, outcome: 'bad_request' });
-      return errorResponse(400, 'BAD_REQUEST', 'Expected multipart/form-data with a `file` part');
-    }
-    const file = form.get('file');
-    if (!(file instanceof File)) {
-      logExtract({ pageCount: 0, outcome: 'bad_request' });
-      return errorResponse(400, 'BAD_REQUEST', 'Missing `file` part in multipart body');
-    }
-
-    // 4. Cheap guards.
-    assertMime(file.type);
-    assertSize(file.size);
-    const buffer = new Uint8Array(await file.arrayBuffer());
-    assertMagicBytes(buffer);
-
-    // 5+6. Page-count + text-density guards (also yields page texts for verify).
+    // 4. Page-count + text-density guards (also yields page texts for verify).
     const { pageCount: pages, pageTexts } = await extractPdfText(buffer);
     pageCount = pages;
     assertPageCount(pageCount);

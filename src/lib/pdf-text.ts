@@ -10,7 +10,7 @@
  * Two outputs:
  *   - `pageTexts[i]` — text for page (i+1), used by the verification layer to
  *     match the model's evidence_quote
- *   - `pageCount` — used by the upload guard to enforce the ≤30 page cap before
+ *   - `pageCount` — used by the upload guard to enforce the ≤50 page cap before
  *     paying for an Anthropic call
  */
 
