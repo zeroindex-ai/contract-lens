@@ -36,7 +36,7 @@ Rules:
 
 2. \`evidence_page\` is the 1-indexed page number in the PDF where \`evidence_quote\` appears.
 
-3. If a field is genuinely not present in the contract, return all three of \`value\`, \`evidence_quote\`, and \`evidence_page\` as null for that field. Do not invent a value, and do not infer one from related text. "Not in this contract" is a valid and useful answer.
+3. If a field is genuinely not present in the contract, return all three of \`value\`, \`evidence_quote\`, and \`evidence_page\` as JSON null for that field. Use real null — NOT a placeholder string such as "Not specified", "N/A", "None", or "null". Do not invent a value, and do not infer one from related text. "Not in this contract" is a valid and useful answer.
 
 4. For \`parties\`: return one entry per distinct party. Set \`role\` based on how the contract identifies them (e.g., "Seller", "Buyer", "Provider", "Client", "Licensor", "Licensee", "Discloser", "Recipient"). Use "Other" only when the role isn't named.
 

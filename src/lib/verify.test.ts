@@ -63,6 +63,19 @@ describe('verify', () => {
     expect(result.effective_date.verified_page).toBe(1);
   });
 
+  it('treats placeholder "absent" values (Not specified / null / N/A) as null-field', () => {
+    const ext = makeExtraction({
+      payment_terms: { value: 'Not specified', evidence_quote: 'Not specified', evidence_page: 1 },
+      kill_fee: { value: 'null', evidence_quote: 'null', evidence_page: 1 },
+      deliverables: { value: 'N/A', evidence_quote: 'N/A', evidence_page: 1 },
+    });
+    const result = verify(ext, pageTexts);
+    for (const key of ['payment_terms', 'kill_fee', 'deliverables'] as const) {
+      expect(result[key].match_quality).toBe('null-field');
+      expect(result[key].value).toBeNull();
+    }
+  });
+
   it('marks a normalized-only match as normalized / 1.0', () => {
     // Smart quotes in the model's quote, straight quotes in the PDF text
     const ext = makeExtraction({

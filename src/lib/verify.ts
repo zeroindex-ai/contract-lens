@@ -82,18 +82,47 @@ export function verify(extraction: ContractExtraction, pageTexts: string[]): Ver
 /* Per-field verification                                                     */
 /* -------------------------------------------------------------------------- */
 
+/** The model is supposed to return `null` for an absent field, but it
+ *  inconsistently emits a placeholder string instead ("Not specified", "N/A",
+ *  the literal "null", etc.). Treat those as absent too — otherwise an absent
+ *  field renders as a red "quote not found" instead of a gray "not in
+ *  contract", which is both wrong and alarming. */
+const ABSENT_SENTINELS = new Set([
+  '',
+  'null',
+  'n/a',
+  'na',
+  'none',
+  'unknown',
+  'not specified',
+  'not applicable',
+  'not present',
+  'not provided',
+  'not stated',
+  'not mentioned',
+  'not in contract',
+  'not in this contract',
+]);
+
+function isAbsentSentinel(value: string): boolean {
+  return ABSENT_SENTINELS.has(value.trim().toLowerCase().replace(/[.!\s]+$/, ''));
+}
+
+const ABSENT_FIELD: VerifiedField = {
+  value: null,
+  evidence_quote: null,
+  evidence_page: null,
+  confidence: 1,
+  verified_page: null,
+  match_quality: 'null-field',
+};
+
 function verifyField(field: ContractField, pageTexts: string[]): VerifiedField {
-  // null = model said this field isn't in the contract. Pass through as a
-  // null-field; we can't disprove a negative from text-matching alone.
-  if (field === null) {
-    return {
-      value: null,
-      evidence_quote: null,
-      evidence_page: null,
-      confidence: 1,
-      verified_page: null,
-      match_quality: 'null-field',
-    };
+  // null = model said this field isn't in the contract. A placeholder value
+  // ("Not specified" / "null" / …) means the same thing — normalize it to a
+  // null-field. We can't disprove a negative from text-matching alone.
+  if (field === null || isAbsentSentinel(field.value)) {
+    return { ...ABSENT_FIELD };
   }
 
   return locate(field, field.evidence_quote, field.evidence_page, pageTexts);

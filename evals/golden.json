@@ -169,7 +169,6 @@
         "expected": {
           "parties": [],
           "fields": {
-            "term": null,
             "ip_ownership": null,
             "termination_clause": null,
             "governing_law": null,
