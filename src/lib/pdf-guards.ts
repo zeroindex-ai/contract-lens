@@ -11,8 +11,8 @@ import { createHash } from 'node:crypto';
  *   4. Page count  (pdfjs-dist getDocument — also catches malformed PDFs)
  */
 
-export const MAX_BYTES = 10 * 1024 * 1024; // 10 MB
-export const MAX_PAGES = 30;
+export const MAX_BYTES = 15 * 1024 * 1024; // 15 MB
+export const MAX_PAGES = 50;
 
 export type GuardCode =
   | 'WRONG_MIME'

@@ -1,38 +1,21 @@
-// Deterministic tests for the eval checks, using the committed sample
-// extraction JSONs as fixtures. No API key / network needed — this verifies
-// the grading logic itself: clean contracts pass, and the two deliberately
-// tampered demo samples (wrong-page term, hallucinated payment clause) are
-// caught by citations_verified / field_values.
+// Deterministic tests for the eval checks (no API key / network). Verifies the
+// grading logic over the open document shape: document type, parties, key
+// facts, the no-hallucination control, and citation verification.
 
-import { readFileSync } from 'node:fs';
-import { join, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { describe, it, expect } from 'vitest';
 import type { GoldenItem, PartialResult } from '@zeroindex-ai/eval-pack';
-import type { VerifiedContractExtraction } from '@/lib/verify';
-import { fieldValues, partiesPresent, citationsVerified } from './checks';
+import type { VerifiedDocumentExtraction } from '@/lib/verify';
+import { documentType, partiesPresent, keyFacts, mustNot, citationsVerified, type Expected } from './checks';
 
-const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
-const SAMPLES = join(ROOT, 'public', 'samples');
-
-const golden = JSON.parse(readFileSync(join(__dirname, 'golden.json'), 'utf-8')) as {
-  items: GoldenItem[];
-};
-
-function itemFor(id: string): GoldenItem {
-  const item = golden.items.find((i) => i.id === id);
-  if (!item) throw new Error(`no golden item ${id}`);
-  return item;
+function item(expected: Expected): GoldenItem {
+  return { id: 't', category: 'c', question: 't', metadata: { expected } };
 }
 
-function resultFor(id: string): PartialResult {
-  const extraction = JSON.parse(
-    readFileSync(join(SAMPLES, `${id}.json`), 'utf-8')
-  ) as VerifiedContractExtraction;
+function result(extraction: VerifiedDocumentExtraction): PartialResult {
   return {
-    id,
-    category: 'test',
-    question: id,
+    id: 't',
+    category: 'c',
+    question: 't',
     text: '',
     retrievedRefs: [],
     citationRefs: [],
@@ -42,46 +25,61 @@ function resultFor(id: string): PartialResult {
   };
 }
 
-const run = (id: string) => {
-  const item = itemFor(id);
-  const result = resultFor(id);
-  return {
-    fieldValues: fieldValues(item, result),
-    parties: partiesPresent(item, result),
-    citations: citationsVerified(item, result),
-  };
-};
-
-describe('clean contracts pass every check', () => {
-  for (const id of ['mutual-nda', 'consulting-msa']) {
-    it(id, () => {
-      const r = run(id);
-      expect(r.fieldValues.ok, JSON.stringify(r.fieldValues.detail)).toBe(true);
-      expect(r.parties.ok, JSON.stringify(r.parties.detail)).toBe(true);
-      expect(r.citations.ok, JSON.stringify(r.citations.detail)).toBe(true);
-    });
-  }
+const cited = (label: string, value: string, mq: 'exact' | 'wrong-page' | 'not-found' = 'exact') => ({
+  label,
+  value,
+  evidence_quote: value,
+  evidence_page: 1,
+  confidence: mq === 'exact' ? 1 : mq === 'wrong-page' ? 0.4 : 0,
+  verified_page: mq === 'not-found' ? null : 1,
+  match_quality: mq,
 });
 
-describe('citations_verified catches a mis-paginated quote', () => {
-  it('fixed-fee-sow term is flagged wrong-page', () => {
-    const r = run('fixed-fee-sow');
-    // Field values still match (the value is correct; only the cited page is wrong).
-    expect(r.fieldValues.ok).toBe(true);
-    expect(r.parties.ok).toBe(true);
-    // The verification layer caught the bad citation.
-    expect(r.citations.ok).toBe(false);
-    const offenders = (r.citations.detail as { offenders: Array<{ field: string }> }).offenders;
-    expect(offenders.some((o) => o.field === 'term')).toBe(true);
+const invoice: VerifiedDocumentExtraction = {
+  document_type: 'Commercial Invoice',
+  summary: 'An invoice.',
+  parties: [
+    { name: 'Summit Office Supply Co.', role: 'Vendor', evidence_quote: 'Summit', evidence_page: 1, confidence: 1, verified_page: 1, match_quality: 'exact' },
+    { name: 'Lakeside Consulting LLC', role: 'Bill to', evidence_quote: 'Lakeside', evidence_page: 1, confidence: 1, verified_page: 1, match_quality: 'exact' },
+  ],
+  key_details: [cited('Total due', '$6,420.00'), cited('Payment terms', 'Net 30')],
+};
+
+describe('eval checks on a clean document', () => {
+  const expected: Expected = {
+    document_type: ['invoice'],
+    parties: ['Summit', 'Lakeside'],
+    key_facts: ['$6,420', 'net 30'],
+    must_not: ['kill fee', 'governing law'],
+  };
+  it('passes document_type, parties, key_facts, must_not, and citations', () => {
+    const r = result(invoice);
+    expect(documentType(item(expected), r).ok).toBe(true);
+    expect(partiesPresent(item(expected), r).ok).toBe(true);
+    expect(keyFacts(item(expected), r).ok).toBe(true);
+    expect(mustNot(item(expected), r).ok).toBe(true);
+    expect(citationsVerified(item(expected), r).ok).toBe(true);
   });
 });
 
-describe('a hallucinated field is caught two ways', () => {
-  it('contributor-license-agreement invents a payment clause', () => {
-    const r = run('contributor-license-agreement');
-    // Ground truth says payment_terms must be absent → field_values fails.
-    expect(r.fieldValues.ok).toBe(false);
-    // The fabricated quote does not appear in the PDF → not-found → citations fail.
-    expect(r.citations.ok).toBe(false);
+describe('eval checks catch problems', () => {
+  it('key_facts fails when an expected fact is missing', () => {
+    const r = result(invoice);
+    expect(keyFacts(item({ key_facts: ['$9,999'] }), r).ok).toBe(false);
+  });
+
+  it('must_not fails when a forbidden fact is fabricated', () => {
+    const r = result({ ...invoice, key_details: [...invoice.key_details, cited('Governing law', 'Delaware')] });
+    expect(mustNot(item({ must_not: ['governing law'] }), r).ok).toBe(false);
+  });
+
+  it('citations_verified fails on a not-found quote', () => {
+    const r = result({ ...invoice, key_details: [cited('Bogus', 'nope', 'not-found')] });
+    expect(citationsVerified(item({}), r).ok).toBe(false);
+  });
+
+  it('document_type fails on a misclassification', () => {
+    const r = result(invoice);
+    expect(documentType(item({ document_type: ['employment'] }), r).ok).toBe(false);
   });
 });

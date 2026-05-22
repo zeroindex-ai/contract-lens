@@ -11,16 +11,12 @@ import type { Client } from '@libsql/client';
 const hoisted = vi.hoisted(() => ({
   client: null as Client | null,
   extraction: {
+    document_type: 'Mutual NDA',
+    summary: 'A mutual NDA between Acme Robotics and Globex Partners.',
     parties: [{ name: 'Acme Robotics, Inc.', role: 'Mutual Party', evidence_quote: 'Acme Robotics, Inc.', evidence_page: 1 }],
-    effective_date: { value: '2026-06-01', evidence_quote: 'June 1, 2026', evidence_page: 1 },
-    term: null,
-    payment_terms: null,
-    deliverables: null,
-    ip_ownership: null,
-    termination_clause: null,
-    governing_law: null,
-    kill_fee: null,
-    limitation_of_liability: null,
+    key_details: [
+      { label: 'Effective date', value: '2026-06-01', evidence_quote: 'June 1, 2026', evidence_page: 1 },
+    ],
   },
   metadata: {
     model: 'claude-sonnet-4-6',
@@ -78,12 +74,13 @@ describe('POST /api/extract', () => {
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.extraction).toBeDefined();
+    expect(body.extraction.document_type).toBe('Mutual NDA');
     expect(body.extraction.parties[0].name).toBe('Acme Robotics, Inc.');
     expect(body.metadata.model).toBe('claude-sonnet-4-6');
     expect(body.metadata.page_count).toBe(2);
     expect(body.metadata.trace_id).toBe('req_test_123');
-    // verify() ran for real: each field carries a computed match_quality.
-    expect(body.extraction.effective_date.match_quality).toBeDefined();
+    // verify() ran for real: each key detail carries a computed match_quality.
+    expect(body.extraction.key_details[0].match_quality).toBeDefined();
   });
 
   it('rejects a non-PDF upload with a 400 guard error (no model call)', async () => {

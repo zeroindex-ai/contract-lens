@@ -1,69 +1,39 @@
 import { describe, expect, it } from 'vitest';
 import { countUnverifiedFields } from './WarningBanner';
-import type { VerifiedContractExtraction } from '@/lib/verify';
+import type { VerifiedDocumentExtraction } from '@/lib/verify';
 
-function ext(): VerifiedContractExtraction {
-  const okField = {
-    value: 'x',
-    evidence_quote: 'x',
-    evidence_page: 1,
-    confidence: 1,
-    verified_page: 1,
-    match_quality: 'exact' as const,
-  };
+const kd = (confidence: number, match_quality: 'exact' | 'fuzzy' | 'wrong-page' | 'not-found' = 'exact') => ({
+  label: 'x',
+  value: 'y',
+  evidence_quote: 'q',
+  evidence_page: 1,
+  confidence,
+  verified_page: 1,
+  match_quality,
+});
+
+function ext(detailConfidences: number[]): VerifiedDocumentExtraction {
   return {
+    document_type: 'X',
+    summary: 'y',
     parties: [
-      {
-        name: 'A',
-        role: 'X',
-        evidence_quote: 'x',
-        evidence_page: 1,
-        confidence: 1,
-        verified_page: 1,
-        match_quality: 'exact',
-      },
+      { name: 'A', role: 'X', evidence_quote: 'q', evidence_page: 1, confidence: 1, verified_page: 1, match_quality: 'exact' },
     ],
-    effective_date: okField,
-    term: okField,
-    payment_terms: okField,
-    deliverables: okField,
-    ip_ownership: okField,
-    termination_clause: okField,
-    governing_law: okField,
-    kill_fee: okField,
-    limitation_of_liability: okField,
+    key_details: detailConfidences.map((c) => kd(c)),
   };
 }
 
 describe('countUnverifiedFields', () => {
-  it('returns 0 unverified when all fields are clean', () => {
-    expect(countUnverifiedFields(ext())).toEqual({ unverified: 0, total: 10 });
+  it('returns 0 unverified when every item is confident', () => {
+    expect(countUnverifiedFields(ext([1, 0.9, 0.6]))).toEqual({ unverified: 0, total: 4 });
   });
 
-  it('counts not-found / wrong-page / incomplete as unverified', () => {
-    const e = ext();
-    e.term = { ...e.term, confidence: 0, verified_page: null, match_quality: 'not-found' };
-    e.payment_terms = { ...e.payment_terms, confidence: 0.4, verified_page: 2, match_quality: 'wrong-page' };
-    e.deliverables = { ...e.deliverables, confidence: 0, verified_page: null, match_quality: 'incomplete' };
-    expect(countUnverifiedFields(e)).toEqual({ unverified: 3, total: 10 });
-  });
-
-  it('does NOT count null-field as unverified (model said "not in contract")', () => {
-    const e = ext();
-    e.kill_fee = {
-      value: null,
-      evidence_quote: null,
-      evidence_page: null,
-      confidence: 1,
-      verified_page: null,
-      match_quality: 'null-field',
-    };
-    expect(countUnverifiedFields(e).unverified).toBe(0);
+  it('counts items below the review threshold (not-found / wrong-page)', () => {
+    const e = ext([1, 0.4, 0]); // 0.4 and 0 are < 0.5
+    expect(countUnverifiedFields(e)).toEqual({ unverified: 2, total: 4 });
   });
 
   it('does NOT count amber/fuzzy in [0.5, 0.9) as unverified', () => {
-    const e = ext();
-    e.term = { ...e.term, confidence: 0.7, verified_page: 1, match_quality: 'fuzzy' };
-    expect(countUnverifiedFields(e).unverified).toBe(0);
+    expect(countUnverifiedFields(ext([0.7, 0.5])).unverified).toBe(0);
   });
 });

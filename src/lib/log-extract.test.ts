@@ -1,29 +1,21 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { buildPayload, logExtract } from './log-extract';
-import type { VerifiedContractExtraction } from './verify';
+import type { VerifiedDocumentExtraction } from './verify';
 import type { ExtractionMetadata } from './extract';
 
-const verified: VerifiedContractExtraction = {
+const verified: VerifiedDocumentExtraction = {
+  document_type: 'Sales Agreement',
+  summary: 'A sample.',
   parties: [
-    {
-      name: 'Acme Corp',
-      role: 'Seller',
-      evidence_quote: 'Acme Corp',
-      evidence_page: 1,
-      confidence: 1,
-      verified_page: 1,
-      match_quality: 'exact',
-    },
+    { name: 'Acme Corp', role: 'Seller', evidence_quote: 'Acme Corp', evidence_page: 1, confidence: 1, verified_page: 1, match_quality: 'exact' },
   ],
-  effective_date: { value: 'X', evidence_quote: 'X', evidence_page: 1, confidence: 1, verified_page: 1, match_quality: 'exact' },
-  term: { value: null, evidence_quote: null, evidence_page: null, confidence: 1, verified_page: null, match_quality: 'null-field' },
-  payment_terms: { value: 'X', evidence_quote: 'X', evidence_page: 1, confidence: 0.8, verified_page: 1, match_quality: 'fuzzy' },
-  deliverables: { value: 'X', evidence_quote: 'X', evidence_page: 1, confidence: 0, verified_page: null, match_quality: 'not-found' },
-  ip_ownership: { value: 'X', evidence_quote: 'X', evidence_page: 1, confidence: 0.4, verified_page: 2, match_quality: 'wrong-page' },
-  termination_clause: { value: 'X', evidence_quote: 'X', evidence_page: 1, confidence: 1, verified_page: 1, match_quality: 'normalized' },
-  governing_law: { value: 'X', evidence_quote: 'X', evidence_page: 1, confidence: 1, verified_page: 1, match_quality: 'exact' },
-  kill_fee: { value: null, evidence_quote: null, evidence_page: null, confidence: 1, verified_page: null, match_quality: 'null-field' },
-  limitation_of_liability: { value: 'X', evidence_quote: 'X', evidence_page: 1, confidence: 1, verified_page: 1, match_quality: 'exact' },
+  key_details: [
+    { label: 'A', value: 'x', evidence_quote: 'x', evidence_page: 1, confidence: 1, verified_page: 1, match_quality: 'exact' },
+    { label: 'B', value: 'x', evidence_quote: 'x', evidence_page: 1, confidence: 0.8, verified_page: 1, match_quality: 'fuzzy' },
+    { label: 'C', value: 'x', evidence_quote: 'x', evidence_page: 1, confidence: 0, verified_page: null, match_quality: 'not-found' },
+    { label: 'D', value: 'x', evidence_quote: 'x', evidence_page: 1, confidence: 0.4, verified_page: 2, match_quality: 'wrong-page' },
+    { label: 'E', value: 'x', evidence_quote: 'x', evidence_page: 1, confidence: 1, verified_page: 1, match_quality: 'normalized' },
+  ],
 };
 
 const metadata: ExtractionMetadata = {
@@ -37,21 +29,21 @@ const metadata: ExtractionMetadata = {
 };
 
 describe('buildPayload', () => {
-  it('computes mean confidence across all fields', () => {
+  it('computes mean confidence across all items (parties + key details)', () => {
     const p = buildPayload({ pageCount: 6, outcome: 'ok', verified, metadata });
-    // 10 fields total (1 party + 9 scalars). Sum: 1+1+1+0.8+0+0.4+1+1+1+1 = 8.2 / 10 = 0.82
-    expect(p.mean_confidence).toBeCloseTo(0.82, 2);
+    // 6 items: 1 + 1 + 0.8 + 0 + 0.4 + 1 = 4.2 / 6 = 0.70
+    expect(p.mean_confidence).toBeCloseTo(0.7, 2);
+    expect(p.item_count).toBe(6);
   });
 
-  it('counts fields per match_quality', () => {
+  it('counts items per match_quality', () => {
     const p = buildPayload({ pageCount: 6, outcome: 'ok', verified, metadata });
     expect(p.match_quality_counts).toEqual({
-      exact: 4,
+      exact: 2,
       normalized: 1,
       fuzzy: 1,
       'wrong-page': 1,
       'not-found': 1,
-      'null-field': 2,
     });
   });
 
@@ -66,6 +58,7 @@ describe('buildPayload', () => {
   it('handles rate-limited outcome (no verified, no metadata)', () => {
     const p = buildPayload({ pageCount: 0, outcome: 'rate_limited' });
     expect(p.mean_confidence).toBeNull();
+    expect(p.item_count).toBe(0);
     expect(p.match_quality_counts).toEqual({});
     expect(p.model).toBeNull();
     expect(p.outcome).toBe('rate_limited');
@@ -134,7 +127,6 @@ describe('logExtract', () => {
   it('swallows fetch errors without throwing', () => {
     const fetchMock = vi.fn().mockRejectedValue(new Error('network down'));
     global.fetch = fetchMock;
-    // Should not throw — logExtract is fire-and-forget
     expect(() => logExtract({ pageCount: 6, outcome: 'ok' })).not.toThrow();
   });
 });

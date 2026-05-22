@@ -5,87 +5,12 @@
       "id": "mutual-nda",
       "category": "nda",
       "question": "mutual-nda",
-      "tags": ["clean"],
+      "tags": ["contract"],
       "metadata": {
-        "pdf": "mutual-nda.pdf",
         "expected": {
-          "parties": ["Acme Robotics", "Globex Partners"],
-          "fields": {
-            "effective_date": [],
-            "term": [],
-            "payment_terms": null,
-            "deliverables": null,
-            "ip_ownership": [],
-            "termination_clause": [],
-            "governing_law": ["delaware"],
-            "kill_fee": null,
-            "limitation_of_liability": []
-          }
-        }
-      }
-    },
-    {
-      "id": "fixed-fee-sow",
-      "category": "sow",
-      "question": "fixed-fee-sow",
-      "tags": ["clean"],
-      "metadata": {
-        "pdf": "fixed-fee-sow.pdf",
-        "expected": {
-          "parties": ["Phoenix Industries", "BlueRiver Consulting"],
-          "fields": {
-            "effective_date": [],
-            "term": [],
-            "payment_terms": ["$42,000"],
-            "deliverables": [],
-            "ip_ownership": [],
-            "termination_clause": [],
-            "governing_law": ["california"],
-            "kill_fee": ["25%"],
-            "limitation_of_liability": []
-          }
-        }
-      }
-    },
-    {
-      "id": "consulting-msa",
-      "category": "msa",
-      "question": "consulting-msa",
-      "tags": ["clean"],
-      "metadata": {
-        "pdf": "consulting-msa.pdf",
-        "expected": {
-          "parties": ["Meridian Health", "Atlas Strategic"],
-          "fields": {
-            "effective_date": [],
-            "term": [],
-            "payment_terms": ["$250"],
-            "deliverables": [],
-            "ip_ownership": [],
-            "termination_clause": [],
-            "governing_law": ["new york"],
-            "limitation_of_liability": []
-          }
-        }
-      }
-    },
-    {
-      "id": "contributor-license-agreement",
-      "category": "cla",
-      "question": "contributor-license-agreement",
-      "tags": ["edge", "absent-fields"],
-      "metadata": {
-        "pdf": "contributor-license-agreement.pdf",
-        "expected": {
-          "parties": ["Open Beacon Foundation", "Contributor"],
-          "fields": {
-            "term": [],
-            "payment_terms": null,
-            "ip_ownership": [],
-            "termination_clause": null,
-            "governing_law": ["delaware"],
-            "kill_fee": null
-          }
+          "document_type": ["non-disclosure"],
+          "parties": ["Acme Robotics", "Globex"],
+          "key_facts": ["delaware", "$1,000"]
         }
       }
     },
@@ -93,67 +18,12 @@
       "id": "employment-agreement",
       "category": "employment",
       "question": "employment-agreement",
-      "tags": ["clean"],
+      "tags": ["contract"],
       "metadata": {
-        "pdf": "employment-agreement.pdf",
         "expected": {
-          "parties": ["Northwind Analytics", "Jordan Rivera"],
-          "fields": {
-            "effective_date": [],
-            "term": [],
-            "payment_terms": ["$145,000"],
-            "deliverables": [],
-            "ip_ownership": [],
-            "termination_clause": [],
-            "governing_law": ["washington"],
-            "kill_fee": null,
-            "limitation_of_liability": null
-          }
-        }
-      }
-    },
-    {
-      "id": "saas-order-form",
-      "category": "saas",
-      "question": "saas-order-form",
-      "tags": ["clean", "tables"],
-      "metadata": {
-        "pdf": "saas-order-form.pdf",
-        "expected": {
-          "parties": ["Brightpath Software", "Cascade Retail"],
-          "fields": {
-            "effective_date": [],
-            "term": ["12 month"],
-            "payment_terms": ["$48,000"],
-            "deliverables": [],
-            "ip_ownership": [],
-            "termination_clause": [],
-            "governing_law": ["california"],
-            "kill_fee": null,
-            "limitation_of_liability": []
-          }
-        }
-      }
-    },
-    {
-      "id": "letter-agreement",
-      "category": "letter",
-      "question": "letter-agreement",
-      "tags": ["edge", "absent-fields"],
-      "metadata": {
-        "pdf": "letter-agreement.pdf",
-        "expected": {
-          "parties": ["Harbor Lane", "Tessellate Media"],
-          "fields": {
-            "effective_date": [],
-            "payment_terms": ["$8,000"],
-            "deliverables": [],
-            "ip_ownership": null,
-            "termination_clause": null,
-            "governing_law": null,
-            "kill_fee": null,
-            "limitation_of_liability": null
-          }
+          "document_type": ["employment"],
+          "parties": ["Northwind", "Rivera"],
+          "key_facts": ["$145,000", "washington"]
         }
       }
     },
@@ -163,16 +33,11 @@
       "question": "purchase-invoice",
       "tags": ["negative-control"],
       "metadata": {
-        "pdf": "purchase-invoice.pdf",
         "expected": {
-          "parties": [],
-          "fields": {
-            "ip_ownership": null,
-            "termination_clause": null,
-            "governing_law": null,
-            "kill_fee": null,
-            "limitation_of_liability": null
-          }
+          "document_type": ["invoice"],
+          "parties": ["Summit", "Lakeside"],
+          "key_facts": ["$6,420", "net 30"],
+          "must_not": ["kill fee", "governing law", "termination clause"]
         }
       }
     }
