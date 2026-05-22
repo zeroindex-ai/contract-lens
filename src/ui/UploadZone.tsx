@@ -37,7 +37,7 @@ export function UploadZone({ onFile, disabled }: UploadZoneProps) {
       style={disabled ? { opacity: 0.5, cursor: 'not-allowed' } : undefined}
     >
       <div className="upload-title">
-        {dragging ? 'Drop the PDF to extract' : 'Drop a contract PDF here, or click to browse'}
+        {dragging ? 'Drop the PDF to extract' : 'Drop a PDF here, or click to browse'}
       </div>
       <div className="upload-meta">
         max {MAX_BYTES / 1024 / 1024} MB · max {MAX_PAGES} pages · 5 extractions / IP / day

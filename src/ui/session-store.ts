@@ -5,7 +5,7 @@ import type { ExtractionMetadataShape } from './ExtractionViewer';
  * Persists the currently-viewed document so a page refresh keeps the user on
  * the viewer instead of dropping them back to the upload screen (which would
  * waste another extraction call). Uses sessionStorage on purpose: it survives
- * a refresh but is cleared when the tab closes, so an uploaded contract's bytes
+ * a refresh but is cleared when the tab closes, so an uploaded document's bytes
  * don't linger on disk — consistent with the server's extract-and-discard.
  *
  * Samples store just their id (re-fetched for free). Uploads store the

@@ -8,7 +8,7 @@ v0.1 shipped — live at **[lens.zeroindex.ai](https://lens.zeroindex.ai)**. See
 
 ## What it does
 
-Upload a contract PDF (or pick a sample) and get back typed JSON with every field anchored to a page in the source. Each field's `evidence_quote` is matched deterministically against the PDF's extracted text — fields whose quotes don't match are flagged in the UI, not silently passed through.
+Upload any official document — a contract, offer letter, invoice, policy — (or pick a sample) and get back a structured, cited reference: the document type, a one-line summary, the parties, and the meaningful details the model finds. Each item's `evidence_quote` is matched deterministically against the PDF's extracted text — anything whose quote doesn't match is flagged in the UI, not silently passed through. The result can be exported as a styled Excel sheet or a compact PDF lookup sheet.
 
 Companion to the rest of the ZeroIndex stack:
 
@@ -18,7 +18,7 @@ Companion to the rest of the ZeroIndex stack:
 
 ## How it works
 
-A visitor uploads a PDF → `POST /api/extract` validates it (PDF magic bytes, ≤ 10 MB, ≤ 30 pages, has extractable text, ≤ 5/IP/day) → Anthropic Messages API (Claude Sonnet 4.6) is called with the base64 PDF and a forced `strict` `tool_use` whose `input_schema` is derived from the Zod `ContractExtraction` schema → each returned field's `evidence_quote` is deterministically matched against `unpdf`-extracted per-page text to compute a confidence and match quality → typed JSON is returned to the client, persisted to Turso (raw PDF discarded), and a fire-and-forget event is POSTed to `traces.zeroindex.ai`.
+A visitor uploads a PDF → `POST /api/extract` validates it (PDF magic bytes, ≤ 15 MB, ≤ 50 pages, has extractable text, ≤ 25/IP/day) → Anthropic Messages API (Claude Sonnet 4.6) is called with the base64 PDF and a forced `strict` `tool_use` whose `input_schema` is derived from the Zod `DocumentExtraction` schema — `{ document_type, summary, parties[], key_details[] }`, where `key_details` is an open list the model fills with whatever's meaningful for the document → each returned item's `evidence_quote` is deterministically matched against `unpdf`-extracted per-page text to compute a confidence and match quality → typed JSON is returned to the client, persisted to Turso (raw PDF discarded), and a fire-and-forget event is POSTed to `traces.zeroindex.ai`.
 
 Server-side text extraction uses [`unpdf`](https://github.com/unjs/unpdf) (a worker-free, serverless-safe build of pdf.js); the browser preview pane uses `pdfjs-dist` directly to render pages and overlay the highlighted citation.
 
@@ -35,7 +35,7 @@ pnpm test:e2e                                     # playwright (chromium, sample
 pnpm dev                                          # localhost:3000
 ```
 
-Extraction accuracy is scored with [`@zeroindex-ai/eval-pack`](https://github.com/zeroindex-ai/eval-pack) against a hand-labeled golden set (`evals/`). Grading is deterministic — field-fact matching, party recall, and citation verification (a hallucinated or mis-paginated quote fails the item). The latest run is published at [evals.zeroindex.ai/contract-lens](https://evals.zeroindex.ai/contract-lens).
+Extraction accuracy is scored with [`@zeroindex-ai/eval-pack`](https://github.com/zeroindex-ai/eval-pack) against a hand-labeled golden set (`evals/`). Grading is deterministic — document-type and key-fact matching, party recall, a no-fabrication negative control, and citation verification (a hallucinated or mis-paginated quote fails the item). The latest run is published at [evals.zeroindex.ai/contract-lens](https://evals.zeroindex.ai/contract-lens).
 
 ```bash
 ANTHROPIC_API_KEY="$(op read '...')" pnpm eval     # runs the live pipeline over the golden set

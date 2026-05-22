@@ -56,7 +56,7 @@ describe('checkAndIncrement', () => {
       sql: 'SELECT count FROM rate_limits WHERE ip_bucket = ?',
       args: [bucket],
     });
-    expect(Number(row.rows[0].count)).toBe(DAILY_LIMIT);
+    expect(Number(row.rows[0]!.count)).toBe(DAILY_LIMIT);
   });
 
   it('never exceeds the cap under a concurrent burst (single atomic statement)', async () => {
@@ -75,7 +75,7 @@ describe('checkAndIncrement', () => {
       sql: 'SELECT count FROM rate_limits WHERE ip_bucket = ?',
       args: [bucket],
     });
-    expect(Number(row.rows[0].count)).toBe(DAILY_LIMIT);
+    expect(Number(row.rows[0]!.count)).toBe(DAILY_LIMIT);
   });
 
   it('tracks IPs independently', async () => {

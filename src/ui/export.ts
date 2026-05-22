@@ -53,7 +53,7 @@ function triggerDownload(blob: Blob, filename: string): void {
 
 // Bounded column widths (Excel "characters" units) — the max width per column.
 // Long text wraps within these rather than stretching a column indefinitely.
-const COLUMN_WIDTHS = [12, 24, 44, 7, 16, 12, 56];
+const COLUMN_WIDTHS = [12, 24, 44, 7, 16, 12, 56] as const;
 
 const TABLE_HEADER = ['Section', 'Label', 'Value', 'Page', 'Verification', 'Confidence', 'Evidence quote'];
 
@@ -92,7 +92,17 @@ export function buildSheet(extraction: VerifiedDocumentExtraction): SheetData {
   return { meta, header: TABLE_HEADER, dataRows };
 }
 
-export async function downloadXlsx(extraction: VerifiedDocumentExtraction): Promise<void> {
+/**
+ * Build the styled workbook. Every cell value is assigned via `cell.value =`,
+ * which exceljs writes as a STRING cell — never a formula. So a model/document
+ * value like `=HYPERLINK(...)` is stored as inert text, not a live formula (no
+ * spreadsheet-formula-injection vector), and legitimate values that start with
+ * `-`/`+`/`@` (e.g. "-$1,000", "-30 days") are preserved verbatim rather than
+ * mangled by a defensive prefix. Pinned by export.test.ts.
+ */
+export async function buildWorkbook(
+  extraction: VerifiedDocumentExtraction
+): Promise<import('exceljs').Workbook> {
   const mod = await import('exceljs');
   const ExcelJS = (mod as unknown as { default?: typeof mod }).default ?? mod;
 
@@ -133,6 +143,11 @@ export async function downloadXlsx(extraction: VerifiedDocumentExtraction): Prom
     r++;
   }
 
+  return wb;
+}
+
+export async function downloadXlsx(extraction: VerifiedDocumentExtraction): Promise<void> {
+  const wb = await buildWorkbook(extraction);
   const buf = await wb.xlsx.writeBuffer();
   const blob = new Blob([buf], {
     type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',

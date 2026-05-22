@@ -79,7 +79,7 @@ describe('extract', () => {
     const { client, create } = makeClient(validExtraction);
     await extract(fakePdf, { client });
 
-    const callArgs = create.mock.calls[0][0];
+    const callArgs = create.mock.calls[0]![0];
     expect(callArgs.model).toBe('claude-sonnet-4-6');
     expect(callArgs.tools[0].name).toBe('extract_document');
     expect(callArgs.tool_choice).toEqual({ type: 'tool', name: 'extract_document' });
@@ -97,7 +97,7 @@ describe('extract', () => {
   it('honors options.model override', async () => {
     const { client, create } = makeClient(validExtraction);
     await extract(fakePdf, { client, model: 'claude-opus-4-7' });
-    expect(create.mock.calls[0][0].model).toBe('claude-opus-4-7');
+    expect(create.mock.calls[0]![0].model).toBe('claude-opus-4-7');
   });
 
   it('throws ExtractionError when the model returns no tool_use block', async () => {

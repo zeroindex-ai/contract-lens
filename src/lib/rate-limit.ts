@@ -79,11 +79,12 @@ export async function checkAndIncrement(
   });
 
   // No row returned → the conditional update was a no-op → already at the cap.
-  if (result.rows.length === 0) {
+  const row = result.rows[0];
+  if (!row) {
     return { allowed: false, remaining: 0, resetsAtUtc: nextUtcMidnight(now) };
   }
 
-  const count = Number(result.rows[0].count);
+  const count = Number(row.count);
   return {
     allowed: true,
     remaining: Math.max(0, limit - count),

@@ -35,9 +35,9 @@ function ext(detail: KeyDetail, partyOverride?: Partial<DocumentExtraction['part
 describe('verify', () => {
   it('marks an exact-match detail as exact / 1.0 / verified at claimed page', () => {
     const r = verify(ext({ label: 'Term', value: '3 years', evidence_quote: 'three (3) years', evidence_page: 2 }), pageTexts);
-    expect(r.key_details[0].match_quality).toBe('exact');
-    expect(r.key_details[0].confidence).toBe(1);
-    expect(r.key_details[0].verified_page).toBe(2);
+    expect(r.key_details[0]!.match_quality).toBe('exact');
+    expect(r.key_details[0]!.confidence).toBe(1);
+    expect(r.key_details[0]!.verified_page).toBe(2);
   });
 
   it('marks a normalized-only match (curly quotes) as normalized / 1.0', () => {
@@ -48,33 +48,33 @@ describe('verify', () => {
       ),
       pageTexts
     );
-    expect(r.parties[0].match_quality).toBe('normalized');
+    expect(r.parties[0]!.match_quality).toBe('normalized');
   });
 
   it('marks a fuzzy match (typo) as fuzzy', () => {
     const r = verify(ext({ label: 'Term', value: '3 years', evidence_quote: 'three  (3)  yeers', evidence_page: 2 }), pageTexts);
-    expect(r.key_details[0].match_quality).toBe('fuzzy');
-    expect(r.key_details[0].confidence).toBeLessThan(1);
+    expect(r.key_details[0]!.match_quality).toBe('fuzzy');
+    expect(r.key_details[0]!.confidence).toBeLessThan(1);
   });
 
   it('flags a mis-paginated quote as wrong-page (found on a neighbor)', () => {
     const r = verify(ext({ label: 'Payment', value: '$50,000', evidence_quote: '$50,000 is due', evidence_page: 1 }), pageTexts);
-    expect(r.key_details[0].match_quality).toBe('wrong-page');
-    expect(r.key_details[0].verified_page).toBe(3);
-    expect(r.key_details[0].confidence).toBe(0.4);
+    expect(r.key_details[0]!.match_quality).toBe('wrong-page');
+    expect(r.key_details[0]!.verified_page).toBe(3);
+    expect(r.key_details[0]!.confidence).toBe(0.4);
   });
 
   it('flags a hallucinated quote as not-found / 0 / no page', () => {
     const r = verify(ext({ label: 'Bogus', value: 'x', evidence_quote: 'a clause that appears nowhere at all', evidence_page: 2 }), pageTexts);
-    expect(r.key_details[0].match_quality).toBe('not-found');
-    expect(r.key_details[0].confidence).toBe(0);
-    expect(r.key_details[0].verified_page).toBeNull();
+    expect(r.key_details[0]!.match_quality).toBe('not-found');
+    expect(r.key_details[0]!.confidence).toBe(0);
+    expect(r.key_details[0]!.verified_page).toBeNull();
   });
 
   it('tolerates an out-of-range claimed page (model emitted 0) by searching the PDF', () => {
     const r = verify(ext({ label: 'Date', value: 'May 17, 2026', evidence_quote: 'May 17, 2026', evidence_page: 0 }), pageTexts);
-    expect(r.key_details[0].match_quality).toBe('wrong-page');
-    expect(r.key_details[0].verified_page).toBe(1);
+    expect(r.key_details[0]!.match_quality).toBe('wrong-page');
+    expect(r.key_details[0]!.verified_page).toBe(1);
   });
 
   it('passes document_type and summary through unchanged', () => {
