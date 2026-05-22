@@ -55,7 +55,7 @@ export function DemoShell({ samples }: DemoShellProps) {
     // Object URL so the PDF preview can render the uploaded file without
     // round-tripping through the server.
     const pdfUrl = URL.createObjectURL(file);
-    setView({ kind: 'loading', label: 'Extracting… (Claude Sonnet 4.6, ~6–25s)' });
+    setView({ kind: 'loading', label: 'Extracting… (Claude Sonnet 4.6, ~15–40s)' });
 
     const form = new FormData();
     form.append('file', file);

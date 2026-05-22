@@ -1,12 +1,13 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import type { MatchQuality, VerifiedDocumentExtraction } from '@/lib/verify';
 import { DetailRow, PartiesRow } from './FieldRow';
 import { PdfPreview } from './PdfPreview';
 import { WarningBanner } from './WarningBanner';
 import { buildCitationMarks } from './marks';
 import { summarize } from './groups';
+import { downloadXlsx, downloadPdf } from './export';
 
 export interface ExtractionMetadataShape {
   id?: string;
@@ -75,27 +76,67 @@ export function ExtractionViewer({
 
   const summary = summarize(extraction);
   const detailCount = extraction.key_details.length;
+  const hasItems = extraction.parties.length + detailCount > 0;
+  // Guard against double-clicks without a visible busy state — exports are
+  // near-instant, so a loading indicator just flashes. Refs avoid re-renders.
+  const pdfBusy = useRef(false);
+  const xlsxBusy = useRef(false);
+
+  async function exportPdf() {
+    if (pdfBusy.current) return;
+    pdfBusy.current = true;
+    try {
+      await downloadPdf(extraction);
+    } finally {
+      pdfBusy.current = false;
+    }
+  }
+
+  async function exportXlsx() {
+    if (xlsxBusy.current) return;
+    xlsxBusy.current = true;
+    try {
+      await downloadXlsx(extraction);
+    } finally {
+      xlsxBusy.current = false;
+    }
+  }
 
   return (
     <section className="pt-6 pb-24">
-      {onClose && (
-        <button type="button" className="back-link" onClick={onClose}>
-          &larr; BACK TO SAMPLES
-        </button>
-      )}
-      {/* compact header: type + status + meta on one row, summary below */}
-      <div className="viewer-head">
-        <div className="viewer-head-row">
-          <div className="viewer-head-id">
+      <div className="viewer-toolbar">
+        {onClose ? (
+          <button type="button" className="back-link" onClick={onClose}>
+            &larr; BACK TO SAMPLES
+          </button>
+        ) : (
+          <span />
+        )}
+        {hasItems && (
+          <div className="export-actions">
+            <span className="export-label">Export</span>
+            <button type="button" className="export-btn" onClick={exportXlsx}>
+              Excel
+            </button>
+            <button type="button" className="export-btn" onClick={exportPdf}>
+              PDF
+            </button>
+          </div>
+        )}
+      </div>
+      {/* Document header: identity + verification, closed off by a hairline rule. */}
+      <header className="doc-header">
+        <div className="doc-header-top">
+          <div className="doc-header-id">
             {sourceLabel && <div className="source-line">{sourceLabel}</div>}
             <h1 className="doc-type">{extraction.document_type}</h1>
           </div>
-          <div className="viewer-head-status">
+          <div className="doc-header-status">
             <div className={`verify-status ${summary.review === 0 ? 'ok' : 'warn'}`}>
               <span className="dot" aria-hidden="true"></span>
               {summary.review === 0 ? 'Fully verified' : `${summary.review} flagged for review`}
             </div>
-            <div className="viewer-head-meta">
+            <div className="doc-header-meta">
               {detailCount} {detailCount === 1 ? 'detail' : 'details'}
               {metadata?.page_count
                 ? ` · ${metadata.page_count} ${metadata.page_count === 1 ? 'page' : 'pages'}`
@@ -105,18 +146,7 @@ export function ExtractionViewer({
           </div>
         </div>
         {extraction.summary && <p className="doc-summary">{extraction.summary}</p>}
-        <div className="legend">
-          <span className="legend-item">
-            <span className="legend-dot dot-green"></span> verified
-          </span>
-          <span className="legend-item">
-            <span className="legend-dot dot-amber"></span> low confidence
-          </span>
-          <span className="legend-item">
-            <span className="legend-dot dot-red"></span> not verified
-          </span>
-        </div>
-      </div>
+      </header>
 
       <WarningBanner verified={extraction} />
 
@@ -159,6 +189,18 @@ export function ExtractionViewer({
         />
       </div>
 
+      <div className="legend viewer-legend">
+        <span className="legend-item">
+          <span className="legend-dot dot-green"></span> verified
+        </span>
+        <span className="legend-item">
+          <span className="legend-dot dot-amber"></span> low confidence
+        </span>
+        <span className="legend-item">
+          <span className="legend-dot dot-red"></span> not verified
+        </span>
+      </div>
+
       {metadata && <MetadataFooter metadata={metadata} />}
     </section>
   );
@@ -185,27 +227,23 @@ function MetadataFooter({ metadata }: { metadata: ExtractionMetadataShape }) {
   return (
     <div className="metadata-footer">
       {metadata.model && (
-        <span>
-          <strong>Model</strong>
-          {metadata.model}
+        <span className="meta-item">
+          <span className="meta-k">Model:</span> {metadata.model}
         </span>
       )}
       {metadata.latency_ms !== undefined && (
-        <span>
-          <strong>Latency</strong>
-          {(metadata.latency_ms / 1000).toFixed(2)}s
+        <span className="meta-item">
+          <span className="meta-k">Latency:</span> {(metadata.latency_ms / 1000).toFixed(2)}s
         </span>
       )}
       {(metadata.input_tokens !== undefined || metadata.output_tokens !== undefined) && (
-        <span>
-          <strong>Tokens</strong>
-          {metadata.input_tokens ?? '?'} in / {metadata.output_tokens ?? '?'} out
+        <span className="meta-item">
+          <span className="meta-k">Tokens:</span> {metadata.input_tokens ?? '?'} in / {metadata.output_tokens ?? '?'} out
         </span>
       )}
       {metadata.trace_id && (
-        <span>
-          <strong>Trace</strong>
-          {metadata.trace_id}
+        <span className="meta-item">
+          <span className="meta-k">Trace:</span> {metadata.trace_id}
         </span>
       )}
     </div>

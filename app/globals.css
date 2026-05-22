@@ -214,48 +214,78 @@ body {
   color: var(--muted-2);
   margin: 0 0 18px;
 }
-/* Compact viewer header — type + status + meta on one row, summary + legend
-   below. Kept tight so the citations/PDF panes sit high on the page. */
-.viewer-head {
-  margin: 0 0 12px;
+/* Document header — identity (source/type/summary) + verification status,
+   closed off by a hairline rule so it reads as a distinct context from the
+   citations/PDF viewer below it. */
+.doc-header {
+  margin: 0 0 18px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--line);
 }
-.viewer-head-row {
+.doc-header-top {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
   flex-wrap: wrap;
 }
-.viewer-head-id .source-line {
-  margin: 0 0 2px;
+.doc-header-id {
+  flex: 1 1 auto;
+  min-width: 0;
 }
-.viewer-head .doc-type {
-  font-size: 19px;
+.doc-header-id .source-line {
+  margin: 0 0 4px;
+}
+.doc-header .doc-type {
+  font-size: 20px;
   font-weight: 700;
   letter-spacing: -0.02em;
+  line-height: 1.2;
   margin: 0;
 }
-.viewer-head-status {
+.doc-header-status {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 10px;
   flex-shrink: 0;
+  flex-wrap: nowrap;
+  white-space: nowrap;
 }
-.viewer-head-meta {
+/* Smaller, quieter pill in the header — it's a status marker, not a headline. */
+.doc-header-status .verify-status {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 9px;
+  gap: 6px;
+}
+.doc-header-status .verify-status .dot {
+  width: 5px;
+  height: 5px;
+}
+.doc-header-meta {
   font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: 11px;
+  letter-spacing: 0.04em;
   color: var(--muted-2);
   white-space: nowrap;
 }
-.viewer-head .doc-summary {
-  margin: 8px 0 0;
+.doc-header .doc-summary {
+  margin: 12px 0 0;
   color: var(--muted);
   font-size: 14px;
-  line-height: 1.5;
+  line-height: 1.55;
 }
-.viewer-head .legend {
-  margin-top: 10px;
-  margin-bottom: 0;
+/* Color key sits below the viewer split and pins to the bottom of the viewport
+   so it stays visible as a reference while the field list scrolls inside its
+   own pane — it's outside the scroll area, never scrolls away. */
+.viewer-legend {
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
+  margin: 14px 0 0;
+  padding: 12px 0;
+  border-top: 1px solid var(--line);
+  background: var(--bg);
 }
 .summary-strip {
   display: flex;
@@ -383,7 +413,7 @@ body {
 
 /* ── field groups + rows ─────────────────────────────────────────────────── */
 .field-group {
-  margin-bottom: 24px;
+  margin-bottom: 16px;
 }
 .group-title {
   font-family: 'JetBrains Mono', ui-monospace, monospace;
@@ -402,10 +432,14 @@ body {
   display: block;
   width: 100%;
   text-align: left;
-  background: none;
-  border: 1px solid transparent;
+  /* Resting state is a subtle cream-on-cream card (bg-soft on the bg page) so
+     each field reads as its own unit without needing hover/selection to tell
+     them apart. Hover/selection lift to white. */
+  background: var(--bg-soft);
+  border: 1px solid var(--line);
   border-radius: 8px;
-  padding: 12px 14px 12px 16px;
+  padding: 8px 14px 8px 16px;
+  margin-bottom: 6px;
   cursor: pointer;
   font: inherit;
   color: inherit;
@@ -460,7 +494,7 @@ body {
   margin-top: 4px;
   color: var(--ink);
   font-size: 14px;
-  line-height: 1.45;
+  line-height: 1.4;
 }
 .field-value.null {
   color: var(--muted-2);
@@ -470,6 +504,28 @@ body {
   font-size: 14px;
   color: var(--ink);
   vertical-align: middle;
+}
+/* page ref sits just left of the score pill, in the head row — consistent for
+   every cell (party + detail). */
+.field-head-right {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  flex-shrink: 0;
+}
+.field-page {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  color: var(--muted-2);
+  white-space: nowrap;
+}
+.party-id {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+  min-width: 0;
 }
 .field-foot {
   margin-top: 7px;
@@ -530,13 +586,27 @@ body {
   gap: 24px;
   align-items: start;
 }
-/* Desktop master-detail: both panes share ONE height (var --pane-h) and pin
-   at the same sticky top, so they're exactly aligned and equal-height. Each
-   scrolls internally — scrolling the field list scrolls only that pane; the
-   window barely moves and the PDF viewer stays put. */
+/* Desktop master-detail: the PDF card sets the row height (its canvas box +
+   chrome); the field list stretches to match and scrolls internally. Each pane
+   scrolls on its own — scrolling the field list barely moves the window, so the
+   PDF viewer stays put. */
 @media (min-width: 900px) {
   .viewer-split {
-    --pane-h: min(790px, calc(100vh - 110px));
+    /* PDF *viewing area* (the canvas box) height — sized directly so the page
+       gets more room. The card wraps its content, so growing this doesn't pool
+       empty space below the quote. */
+    --pdf-view-h: min(1500px, calc(100vh - 120px));
+    /* Quote section height (box + its top margin) — shared by the quote box and
+       the field-list height calc so they stay in sync. */
+    --quote-h: 92px;
+    /* Card chrome above the canvas (card padding-top + page bar + margin + the
+       "N citations" hint). The field list starts at the card's top edge, so it
+       must span this too to reach the quote box's bottom. */
+    --pdf-chrome-top: 76px;
+    /* Field list spans the same vertical extent as the canvas + quote section:
+       top chrome + viewer + quote margin + quote box. Fixed height, so it stays
+       a contained scroll box (scrollbar when the list overflows). */
+    --pane-h: calc(var(--pdf-chrome-top) + var(--pdf-view-h) + 12px + var(--quote-h));
     grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
     align-items: start;
   }
@@ -567,13 +637,11 @@ body {
 
   /* PDF panel matches the pane height exactly; the canvas-wrap flexes to fill
      the space between the page bar and the quote footer. */
-  .pdf-preview {
-    height: var(--pane-h);
-    display: flex;
-    flex-direction: column;
-  }
-  .pdf-canvas-wrap {
-    flex: 1;
+  /* Card wraps its content (no fixed height) so there's no pooled gap below the
+     quote; the canvas box gets its own explicit height instead. Higher
+     specificity than the base .pdf-canvas-wrap rule below so this wins. */
+  .viewer-split .pdf-canvas-wrap {
+    height: var(--pdf-view-h);
     max-height: none;
   }
 }
@@ -661,6 +729,10 @@ body {
   overflow: auto;
   scrollbar-gutter: stable;
   background: #fff;
+  /* Center the page when it's shorter than the viewer so leftover height splits
+     top/bottom instead of pooling under the page. margin:auto on the stage (vs.
+     justify/align center) keeps the top reachable when zoomed past the edges. */
+  display: flex;
   /* Cap to the viewport so the whole sticky panel (sticky-top 88 + page-bar +
      this wrap + quote footer + padding ≈ 280px of chrome) always fits on
      screen. Then the inner scroll container is always fully visible, so
@@ -673,6 +745,7 @@ body {
 .pdf-stage {
   position: relative;
   line-height: 0;
+  margin: auto;
 }
 .pdf-canvas-wrap canvas {
   display: block;
@@ -726,9 +799,10 @@ body {
   line-height: 1.5;
   color: var(--ink);
   white-space: pre-wrap;
-  /* bound the footer height so a long quote can't push the sticky panel past
-     the viewport; it scrolls internally if needed */
-  max-height: 92px;
+  /* bound the footer height so a long quote can't push the panel past the
+     viewport; it scrolls internally if needed. Shared with the field-list
+     height calc via --quote-h (fallback for mobile, where it's unset). */
+  max-height: var(--quote-h, 92px);
   overflow-y: auto;
 }
 .pdf-quote .quote-meta {
@@ -869,6 +943,14 @@ body {
   }
 }
 
+.viewer-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
 .back-link {
   display: inline-flex;
   align-items: center;
@@ -882,10 +964,42 @@ body {
   border: none;
   padding: 4px 0;
   cursor: pointer;
-  margin-bottom: 12px;
 }
 .back-link:hover {
   color: var(--ink);
+}
+
+.export-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.export-label {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted-2);
+}
+.export-btn {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--ink);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 4px 12px;
+  cursor: pointer;
+  transition: border-color 0.12s ease, color 0.12s ease;
+}
+.export-btn:hover:not(:disabled) {
+  border-color: var(--accent-1);
+  color: var(--accent-1);
+}
+.export-btn:disabled {
+  opacity: 0.55;
+  cursor: default;
 }
 
 .metadata-footer {
@@ -895,15 +1009,17 @@ body {
   font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: 10.5px;
   letter-spacing: 0.04em;
-  color: var(--muted-2);
+  color: var(--muted);
   display: flex;
   flex-wrap: wrap;
-  gap: 18px;
+  gap: 24px;
 }
-.metadata-footer span strong {
-  color: var(--muted);
-  font-weight: 500;
-  margin-right: 4px;
+/* Label is muted/uppercase when styled, but the ": " in the markup guarantees
+   spacing even before this loads. */
+.metadata-footer .meta-k {
+  color: var(--muted-2);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
 }
 
 /* Admin tables — mirrors the canonical trace-pack/intake-zero admin surface:
