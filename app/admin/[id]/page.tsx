@@ -29,8 +29,27 @@ export default async function ExtractionDetailPage({ params }: { params: Promise
   const row = res.rows[0];
   if (!row) notFound();
 
-  const meta = JSON.parse(String(row.metadata_json)) as { model?: string };
-  const extraction = JSON.parse(String(row.extracted_json)) as VerifiedDocumentExtraction;
+  let meta: { model?: string };
+  let extraction: VerifiedDocumentExtraction;
+  try {
+    meta = JSON.parse(String(row.metadata_json)) as { model?: string };
+    extraction = JSON.parse(String(row.extracted_json)) as VerifiedDocumentExtraction;
+  } catch {
+    // Corrupt/legacy stored JSON — show a graceful note instead of a 500.
+    return (
+      <section className="pt-10 pb-24">
+        <div className="label mb-3">
+          <Link href="/admin" className="subtle">
+            ← Admin
+          </Link>
+        </div>
+        <h1 className="text-3xl md:text-4xl font-bold tracking-tight">
+          Unreadable extraction <span className="muted-2">#{String(row.id).slice(0, 8)}</span>
+        </h1>
+        <p className="mt-4 muted text-base leading-relaxed">This row&rsquo;s stored JSON couldn&rsquo;t be parsed.</p>
+      </section>
+    );
+  }
 
   return (
     <section className="pt-10 pb-24">

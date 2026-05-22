@@ -25,6 +25,14 @@ import { DocumentExtractionSchema, type DocumentExtraction } from '@/schema/extr
 
 const DEFAULT_MODEL = 'claude-sonnet-4-6';
 
+/**
+ * Per-request cap on the Anthropic call, below Vercel's 60s `maxDuration` so a
+ * hung upstream call fails server-side (as a timeout APIError → 503) instead of
+ * burning the whole function budget. Retries are disabled for the same reason —
+ * there's no time left for a second attempt inside the route's window.
+ */
+const EXTRACT_TIMEOUT_MS = 50_000;
+
 /** Tool name the model is forced to call. */
 const TOOL_NAME = 'extract_document';
 
@@ -126,7 +134,7 @@ export async function extract(pdfBuffer: Uint8Array, options: ExtractOptions = {
         ],
       },
     ],
-  });
+  }, { timeout: EXTRACT_TIMEOUT_MS, maxRetries: 0 });
   const latency_ms = Date.now() - t0;
 
   const toolUse = response.content.find((b): b is Anthropic.ToolUseBlock => b.type === 'tool_use');
