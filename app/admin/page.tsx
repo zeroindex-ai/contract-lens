@@ -49,7 +49,7 @@ export default async function AdminPage() {
       <div className="label mb-3">Admin</div>
       <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Extractions</h1>
       <p className="mt-4 muted text-base leading-relaxed">
-        Metadata only — the raw PDF and extracted content are never stored.{' '}
+        The raw PDF is never stored — only the extracted fields and run metadata.{' '}
         <span className="mono">{total}</span> total · <span className="mono">{today}</span> today.
       </p>
 

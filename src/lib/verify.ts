@@ -68,9 +68,11 @@ function locate<T extends object>(
 ): T & Verified {
   const claimedIdx = claimedPage - 1; // 1-indexed → 0-indexed
 
-  // 1) Try the claimed page first.
-  if (claimedIdx >= 0 && claimedIdx < pageTexts.length) {
-    const m = match(quote, pageTexts[claimedIdx]);
+  // 1) Try the claimed page first. (Indexing an out-of-range page yields
+  //    undefined, which the guard below also treats as "not on this page".)
+  const claimedText = pageTexts[claimedIdx];
+  if (claimedText !== undefined) {
+    const m = match(quote, claimedText);
     if (m.strength !== 'none') {
       return { ...item, confidence: m.score, verified_page: claimedPage, match_quality: m.strength };
     }
@@ -79,8 +81,9 @@ function locate<T extends object>(
   // 2) Try neighboring pages within NEIGHBOR_RADIUS.
   for (let delta = 1; delta <= NEIGHBOR_RADIUS; delta++) {
     for (const candidate of [claimedIdx - delta, claimedIdx + delta]) {
-      if (candidate < 0 || candidate >= pageTexts.length) continue;
-      const m = match(quote, pageTexts[candidate]);
+      const candidateText = pageTexts[candidate];
+      if (candidateText === undefined) continue;
+      const m = match(quote, candidateText);
       if (m.strength !== 'none') {
         return {
           ...item,

@@ -1,6 +1,6 @@
 # contract-lens — Project Documentation
 
-> **Status: shipped v0.1** — live at [lens.zeroindex.ai](https://lens.zeroindex.ai). Upload a contract PDF (or open a sample) and get structured fields back, each with a citation that is **verified** against the source page.
+> **Status: shipped v0.1** — live at [lens.zeroindex.ai](https://lens.zeroindex.ai). Upload any official document (or open a sample) and get a structured, cited reference back — the document type, a summary, the parties, and the meaningful details — each anchored to and **verified** against the source page.
 
 This document captures the scope, strategic decisions, architecture, public contracts, and known constraints for `contract-lens`. It exists to onboard a future collaborator (or future-you in a clean session) and to record the *reasoning* behind decisions, not just the decisions themselves.
 
@@ -10,7 +10,7 @@ This document captures the scope, strategic decisions, architecture, public cont
 
 ### What `contract-lens` is
 
-A minimal, opinionated document-intelligence demo: a consumer uploads a contract PDF; `contract-lens` extracts a fixed set of structured fields (parties, dates, payment terms, IP ownership, termination, governing law, …) and — critically — **verifies every extracted field against the source PDF text**. Fields whose evidence can't be found are flagged rather than silently passed through.
+A minimal, opinionated document-intelligence demo: a consumer uploads any official document (PDF); `contract-lens` classifies it, summarizes it, and extracts the meaningful details as an **open list** — `{ document_type, summary, parties[], key_details[] }`, where the model surfaces whatever matters for that document rather than filling a fixed field list — and, critically, **verifies every extracted item against the source PDF text**. Items whose evidence can't be found are flagged rather than silently passed through.
 
 Companion to the rest of the ZeroIndex stack:
 
@@ -19,21 +19,21 @@ Companion to the rest of the ZeroIndex stack:
 
 ### Why this project
 
-Most document-extraction tools show you fields. Almost none show you *where each field came from* — and fewer still tell you when the model got it wrong. The differentiator here is the **verification layer**: the model self-reports an `evidence_quote` + `evidence_page` for each field, and a deterministic matcher checks that quote against the actual extracted PDF text. The result is a per-field confidence that's *computed*, not model-asserted, plus explicit detection of hallucinated or mis-paginated citations.
+Most document-extraction tools show you fields. Almost none show you *where each value came from* — and fewer still tell you when the model got it wrong. The differentiator here is the **verification layer**: the model self-reports an `evidence_quote` + `evidence_page` for each item it extracts, and a deterministic matcher checks that quote against the actual extracted PDF text. The result is a per-item confidence that's *computed*, not model-asserted, plus explicit detection of hallucinated or mis-paginated citations.
 
 ### Goals & success criteria for v0.1
 
 | Goal | Metric | Status |
 | --- | --- | --- |
 | Public demo live | `lens.zeroindex.ai` returns 200; upload + sample paths work | ✅ |
-| Real extraction with verified citations | Every field carries `value` + `evidence_quote` + `evidence_page` + computed `confidence` + `verified_page` | ✅ |
-| No hallucinated citations slip through | A field whose quote isn't in the PDF is flagged (not-found), not shown as clean | ✅ |
+| Real extraction with verified citations | Every party and key detail carries its `value` + `evidence_quote` + `evidence_page` + computed `confidence` + `verified_page` | ✅ |
+| No hallucinated citations slip through | An item whose quote isn't in the PDF is flagged (not-found), not shown as clean | ✅ |
 | Single API call per extraction | One Claude call: PDF in → structured tool_use out | ✅ |
 | Extract-and-discard | Raw PDF is never persisted — only a hash, page count, the extracted JSON, and metadata | ✅ |
 
 ### Out of scope (for v0.1)
 
-- **Multiple document types.** Contracts only — no invoices, forms, or leases. The schema is fixed.
+- **Per-document custom schemas / field picklists.** One open shape serves every document type; there's no per-type template or user-defined field set.
 - **Editable fields / saved history per user.** Display-only; no accounts.
 - **Real-time / streaming UI.** Synchronous extraction (~6–25s) is fine at this scale.
 - **Scanned/image-only PDFs.** Text must be extractable; scans are rejected with a clear error.
@@ -48,12 +48,13 @@ Load-bearing decisions, documented because the *why* often outlasts the *what*.
 
 | Decision | Choice | Reasoning |
 | --- | --- | --- |
-| **Model** | `claude-sonnet-4-6` | Well within Sonnet's envelope for structured contract extraction; ~40% cheaper per call than the top Opus tier. Override via `ANTHROPIC_MODEL`. |
+| **Extraction scope** | Fully general document intelligence, not contracts-only | Real-use feedback showed a fixed contract-field list was too limiting. An open `key_details` list lets one tool serve contracts, offer letters, invoices, policies, statements, forms, … without per-type schemas — the model surfaces what's meaningful for the document in front of it. |
+| **Model** | `claude-sonnet-4-6` | Well within Sonnet's envelope for structured document extraction; ~40% cheaper per call than the top Opus tier. Override via `ANTHROPIC_MODEL`. |
 | **PDF transport** | Base64 inline in the `document` content block | No Files API beta header needed; extract-and-discard is simpler when the PDF never persists. |
 | **Citations approach** | Self-reported `evidence_quote`/`evidence_page`, then **deterministically verified** — NOT Anthropic's native citations | Native citations are API-incompatible with structured output (returns 400) and only attach to text blocks, never to tool_use args. Self-reported + verified gives per-field anchoring, *computed* confidence, and hallucination detection in one call. |
 | **Structured output** | Forced `tool_use` with `strict: true` | Without strict, the model returns nested arrays/objects as strings that fail validation. Strict guarantees conformance. |
 | **Thinking** | Off | Anthropic rejects adaptive thinking when `tool_choice` forces a tool. Reliable structured output wins over thinking for this task. |
-| **Schema shape** | Whole-field nullability (each field is an object **or** `null`) | Strict mode caps union-typed params at 16; three independently-nullable props per field would exceed it. Whole-field nullability keeps it at one union per field — and is cleaner semantically (present or absent, no partial state). |
+| **Schema shape** | Open `{ document_type, summary, parties[], key_details[] }`; `key_details` an unbounded list of `{ label, value, evidence_quote, evidence_page }` | The tool adapts to any document by surfacing whatever's meaningful instead of filling a fixed field list. There are no nullable/absent fields — the model simply omits what isn't present, so there's nothing to mark "not in document" and no union-cardinality limit to fight. |
 | **Schema validation** | Zod, with numeric constraints stripped from the *wire* schema | Strict mode rejects `minimum`/`maximum`/etc.; Zod keeps them for our own response validation, a stripped copy goes to Anthropic. |
 | **Server-side PDF text** | `unpdf` (not raw pdfjs-dist) | pdfjs's dynamic worker import can't be bundled into a serverless function reliably. `unpdf` ships a worker-free serverless build of pdf.js. The browser preview still uses pdfjs-dist directly. |
 | **Storage** | Turso libsql, one DB | Consistent with the rest of the stack. Schema: `extractions` + `rate_limits`. Raw PDF never stored. |
@@ -74,7 +75,7 @@ Load-bearing decisions, documented because the *why* often outlasts the *what*.
  Browser ──upload──▶ POST /api/extract (Next.js route, Node runtime on Vercel)
                        │
                        ├─ rate limit (per-IP-bucket daily counter, Turso)
-                       ├─ guards: MIME · magic bytes · ≤10 MB · ≤30 pages · has-text
+                       ├─ guards: MIME · magic bytes · ≤15 MB · ≤50 pages · has-text
                        ├─ extractPdfText()  ── unpdf → per-page text + page count
                        ├─ extract()         ── Anthropic Messages: base64 PDF +
                        │                        forced strict tool_use → Zod-validated
@@ -85,7 +86,7 @@ Load-bearing decisions, documented because the *why* often outlasts the *what*.
                        └─ logExtract()      ── fire-and-forget event → traces.zeroindex.ai (optional)
                        ▼
        { extraction (verified), metadata }  ──▶  two-pane viewer:
-                                                   left  = fields grouped by section
+                                                   left  = parties + key details (each a cited card)
                                                    right = PDF page (pdfjs canvas + text layer); every
                                                            citation on the visible page is highlighted at
                                                            once (yellow), the selected one filled violet;
@@ -95,14 +96,13 @@ Load-bearing decisions, documented because the *why* often outlasts the *what*.
 
 ### Verification — the core idea
 
-`verify()` takes the model's extraction and the PDF's per-page text and, for each field:
+`verify()` takes the model's extraction and the PDF's per-page text and, for each party and key detail:
 
 1. Tries the **claimed page** first — exact substring → `exact`; whitespace/quote/dash-normalized → `normalized`; sliding-window Sørensen–Dice ≥ threshold → `fuzzy`.
 2. On a miss, scans neighboring pages (±2) — found elsewhere → `wrong-page` (the model cited the wrong page).
 3. Found nowhere → `not-found` (likely hallucinated).
-4. Field returned as `null` → `null-field` (model said it's not in the contract; unverifiable negative, shown as "not in contract").
 
-Confidence is the match score; the UI colors each field by band and shows a banner when any field couldn't be verified.
+There is no "absent" state to verify: the model omits details that aren't in the document rather than emitting nulls, so every item it returns is a positive claim to check. Confidence is the match score; the UI colors each item by band and shows a banner when any item couldn't be verified.
 
 ---
 
@@ -116,13 +116,15 @@ Confidence is the match score; the UI colors each field by band and shows a bann
 // 200
 {
   "extraction": {
-    "parties": [{ "name", "role", "evidence_quote", "evidence_page",
-                  "confidence", "verified_page", "match_quality" }],
-    "effective_date": { "value", "evidence_quote", "evidence_page",
-                        "confidence", "verified_page", "match_quality" },
-    // … term, payment_terms, deliverables, ip_ownership, termination_clause,
-    //   governing_law, kill_fee, limitation_of_liability
-    //   (each: same shape, or null fields → match_quality "null-field")
+    "document_type": "Mutual Non-Disclosure Agreement",   // model's classification
+    "summary": "One-line description of the document.",
+    "parties":     [{ "name", "role", "evidence_quote", "evidence_page",
+                      "confidence", "verified_page", "match_quality" }],
+    "key_details": [{ "label", "value", "evidence_quote", "evidence_page",
+                      "confidence", "verified_page", "match_quality" }]
+    //   key_details is an open list — the model emits whatever's meaningful for
+    //   the document (governing law, fee, term, total due, …). verify() adds the
+    //   confidence / verified_page / match_quality fields.
   },
   "metadata": { "id", "page_count", "model", "latency_ms",
                 "input_tokens", "output_tokens", "trace_id" }
@@ -144,7 +146,7 @@ Upstream API errors (billing, rate limits, auth) are logged server-side and retu
 
 ### v0.1 known constraints
 
-- **One document type** (contracts) and **one fixed schema**.
+- **One open schema for all document types** — no per-type templates or user-defined field sets.
 - **Text-based PDFs only** — scans without embedded text are rejected.
 - **Per-IP daily rate limit** (configurable via `RATE_LIMIT_PER_DAY`, default 25) — atomic check-and-increment (single conditional UPSERT), but a failed attempt still consumes a slot because the increment precedes the guards.
 - **First call per schema is slow** (~20–30s) while strict mode compiles the schema; cached ~24h after.
@@ -152,25 +154,32 @@ Upstream API errors (billing, rate limits, auth) are logged server-side and retu
 
 ### v0.2 candidates
 
-- More document types (invoices, simple forms) behind a type selector.
-- A "highlight all citations on this page" overview mode.
-- Per-field human override + downloadable CSV/JSON.
-- Cost metrics once token usage is surfaced.
+- Per-item human override / correction.
+- An annotated source-PDF export (today's export is a styled Excel sheet + a compact PDF lookup sheet).
+- Cost metrics surfaced in the UI once token usage is exposed.
 - Move the rate-limit increment to *after* the cheap guards so a bad upload doesn't burn a slot.
+
+### Shipped since v0.1
+
+- The fully-general pivot (open `key_details`, any document type).
+- "Highlight all citations on the visible page" overview mode.
+- Excel (`.xlsx`) + PDF lookup-sheet export.
 
 ---
 
 ## 6. Evaluation
 
-The extraction quality is scored with [`@zeroindex-ai/eval-pack`](https://github.com/zeroindex-ai/eval-pack) against a hand-labeled golden set of contracts (`evals/golden.json`). Grading is fully deterministic — no LLM judge:
+The extraction quality is scored with [`@zeroindex-ai/eval-pack`](https://github.com/zeroindex-ai/eval-pack) against a hand-labeled golden set of documents (`evals/golden.json`). Grading is fully deterministic — no LLM judge:
 
-- **field_values** — each asserted field matches ground truth: absent fields stay absent (the model doesn't invent a clause), present fields contain the essential facts (dates, amounts, governing law).
+- **document_type** — the model's classification contains the expected type.
 - **parties** — every expected party is recovered.
-- **citations_verified** — the core assertion: every field the model reports must carry a citation that lands in the source PDF on the right page. A hallucinated (not-found) or mis-paginated (wrong-page) quote fails the item. This is the "verified" in the product promise, measured.
+- **key_facts** — each expected fact (an amount, a date, a jurisdiction) appears among the extracted key details.
+- **must_not** — a no-fabrication negative control: forbidden facts (e.g. a kill fee on a document that has none) must NOT appear.
+- **citations_verified** — the core assertion: every party and key detail the model reports must carry a citation that lands in the source PDF on the right page. A hallucinated (not-found) or mis-paginated (wrong-page) quote fails the item. This is the "verified" in the product promise, measured.
 
-The golden set spans 8 documents across types (NDA, SOW, MSA, CLA, employment agreement, SaaS order form, a bare engagement letter, and a non-contract invoice as a negative control) and deliberately includes edge cases — contracts with genuinely-absent fields, to confirm the model doesn't fabricate them. The check logic itself is unit-tested offline (`evals/checks.test.ts`) using the committed sample extractions as fixtures, so CI guards the grader without spending API budget.
+The golden set spans 8 documents across types (NDA, SOW, MSA, CLA, employment agreement, SaaS order form, a bare engagement letter, and a non-contract invoice as a negative control) and deliberately exercises the `must_not` control — documents that lack common clauses, to confirm the model doesn't fabricate them. The check logic itself is unit-tested offline (`evals/checks.test.ts`) using the committed sample extractions as fixtures, so CI guards the grader without spending API budget.
 
-The eval runs in CI (`.github/workflows/eval.yml`) with `ANTHROPIC_API_KEY` as a repo secret, then renders and publishes to `evals-site` via `EVALS_SITE_TOKEN` — the same auto-publish pattern as `ask-zeroindex` and `intake-zero`. The pass threshold is **0.75**: `citations_verified` is intentionally strict — a single non-verbatim model quote flags the whole contract — so the bar tolerates the ~1 item that flips on model nondeterminism (borderline field mappings) while still failing on a genuine regression. The richer signal is the per-contract report (which fields verified, which were flagged); a flagged citation is the verification layer doing its job, not a defect. *(The eval has already paid for itself twice: it caught a production bug where the model emits `evidence_page: 0` — used to 500 the extraction, now tolerated — and a correctness bug where the model signals an absent field with a placeholder string ("Not specified", "N/A") instead of null, which used to render as a red "not found" instead of a gray "not in contract"; both are now normalized.)*
+The eval runs in CI (`.github/workflows/eval.yml`) with `ANTHROPIC_API_KEY` as a repo secret, then renders and publishes to `evals-site` via `EVALS_SITE_TOKEN` — the same auto-publish pattern as `ask-zeroindex` and `intake-zero`. The pass threshold is **0.75**: `citations_verified` is intentionally strict — a single non-verbatim model quote flags the whole document — so the bar tolerates the ~1 item that flips on model nondeterminism (borderline detail mappings) while still failing on a genuine regression. The richer signal is the per-document report (which items verified, which were flagged); a flagged citation is the verification layer doing its job, not a defect. *(The eval earned its keep during v0.1: it caught a production bug where the model emits `evidence_page: 0` — used to 500 the extraction, now tolerated — and, in the pre-pivot fixed-field schema, a bug where the model signalled an absent field with a placeholder string ("Not specified", "N/A") instead of null; the general schema no longer has an absent-field state, so that class of bug is gone by construction.)*
 
 ```bash
 # In-process — runs the pipeline directly (deterministic, no rate limit):

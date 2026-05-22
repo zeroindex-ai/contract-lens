@@ -78,7 +78,7 @@ export function assertPageCount(pageCount: number): void {
  * layer can't operate on these so we fail fast with a clear message.
  *
  * Heuristic: if total extracted text across all pages is < 100 chars per page
- * on average, we assume it's a scan. Real contracts always have lots of text.
+ * on average, we assume it's a scan. Real documents always have lots of text.
  */
 export function assertHasExtractableText(pageTexts: string[]): void {
   if (pageTexts.length === 0) {

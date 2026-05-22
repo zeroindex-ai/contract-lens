@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
+import ExcelJS from 'exceljs';
 import type { VerifiedDocumentExtraction } from '@/lib/verify';
-import { buildSheet } from './export';
+import { buildSheet, buildWorkbook } from './export';
 
 // downloadXlsx/downloadPdf touch the DOM + dynamically import their libs, so
 // they're exercised in the browser (manual + e2e). buildSheet is the pure row
@@ -52,5 +53,54 @@ describe('buildSheet', () => {
     const { dataRows } = buildSheet(ext());
     // wrong-page detail: claimed p.2, verified p.3, confidence 0.40 (< 0.5) → red → "not verified"
     expect(dataRows).toContainEqual(['Detail', 'Note', 'line1\nline2', 3, 'not verified', '0.40', 'q']);
+  });
+});
+
+describe('buildWorkbook — spreadsheet-injection safety', () => {
+  function findCell(ws: ExcelJS.Worksheet, value: string): ExcelJS.Cell | undefined {
+    let found: ExcelJS.Cell | undefined;
+    ws.eachRow((row) =>
+      row.eachCell((cell) => {
+        if (cell.value === value) found = cell;
+      })
+    );
+    return found;
+  }
+
+  // A formula-looking value from an untrusted document must NOT become a live
+  // formula. exceljs writes cell.value strings as String-typed cells, so this
+  // is inherent — but pin it so a future refactor can't silently regress it.
+  it('writes a formula-looking value as an inert String cell, not a formula', async () => {
+    const evil = '=HYPERLINK("http://evil","click")';
+    const extraction: VerifiedDocumentExtraction = {
+      document_type: 'Invoice',
+      summary: 'x',
+      parties: [],
+      key_details: [
+        { label: 'Note', value: evil, evidence_quote: evil, evidence_page: 1, confidence: 1, verified_page: 1, match_quality: 'exact' },
+      ],
+    };
+    const ws = (await buildWorkbook(extraction)).getWorksheet('Extraction')!;
+    const cell = findCell(ws, evil);
+    expect(cell).toBeDefined();
+    expect(cell!.type).toBe(ExcelJS.ValueType.String);
+    expect(cell!.type).not.toBe(ExcelJS.ValueType.Formula);
+    expect(cell!.formula).toBeUndefined();
+  });
+
+  // The flip side: don't mangle legitimate values that start with - / + / @
+  // (negative amounts, dates) — they must survive verbatim, no defensive prefix.
+  it('preserves leading -/+/@ values verbatim (no prefixing)', async () => {
+    const neg = '-$1,000.00';
+    const extraction: VerifiedDocumentExtraction = {
+      document_type: 'Invoice',
+      summary: 'x',
+      parties: [],
+      key_details: [
+        { label: 'Credit', value: neg, evidence_quote: neg, evidence_page: 1, confidence: 1, verified_page: 1, match_quality: 'exact' },
+      ],
+    };
+    const ws = (await buildWorkbook(extraction)).getWorksheet('Extraction')!;
+    expect(findCell(ws, neg)).toBeDefined();
   });
 });

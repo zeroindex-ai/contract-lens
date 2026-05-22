@@ -86,7 +86,7 @@ describe('logExtract', () => {
     logExtract({ pageCount: 6, outcome: 'ok', verified, metadata });
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
-    const [url, init] = fetchMock.mock.calls[0];
+    const [url, init] = fetchMock.mock.calls[0]!;
     expect(url).toBe('https://traces.example.com/api/ingest');
     expect(init.method).toBe('POST');
     expect(init.headers).toMatchObject({
@@ -105,7 +105,7 @@ describe('logExtract', () => {
     const fetchMock = vi.fn().mockResolvedValue(new Response(null, { status: 204 }));
     global.fetch = fetchMock;
     logExtract({ pageCount: 6, outcome: 'ok' });
-    expect(fetchMock.mock.calls[0][0]).toBe('https://traces.example.com/api/ingest');
+    expect(fetchMock.mock.calls[0]![0]).toBe('https://traces.example.com/api/ingest');
   });
 
   it('silently skips when TRACE_PACK_URL is unset', () => {

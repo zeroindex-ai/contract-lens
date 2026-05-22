@@ -105,7 +105,7 @@ export async function extract(pdfBuffer: Uint8Array, options: ExtractOptions = {
     tools: [
       {
         name: TOOL_NAME,
-        description: 'Return the structured extraction from the contract PDF.',
+        description: 'Return the structured extraction from the document.',
         strict: true,
         // Cast required: Anthropic's TS types want JSONSchema7-shaped input_schema,
         // but z.toJSONSchema returns a more general JSON Schema (draft 2020-12).
