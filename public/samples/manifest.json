@@ -19,6 +19,51 @@
       "json_path": "/samples/employment-agreement.json"
     },
     {
+      "id": "consulting-msa",
+      "title": "Master Services Agreement",
+      "subtitle": "Meridian Health · Atlas Advisors",
+      "blurb": "A consulting MSA billed hourly, with work ordered through individual SOWs. Surfaces the rate, auto-renewal terms, IP ownership, and liability cap — each cited.",
+      "page_count": 3,
+      "pdf_path": "/samples/consulting-msa.pdf",
+      "json_path": "/samples/consulting-msa.json"
+    },
+    {
+      "id": "fixed-fee-sow",
+      "title": "Statement of Work",
+      "subtitle": "Phoenix Industries · BlueRiver Consulting",
+      "blurb": "A fixed-fee data-pipeline migration SOW. Captures the milestone fee schedule, deliverables, kill fee, and termination terms, each cited to the page.",
+      "page_count": 2,
+      "pdf_path": "/samples/fixed-fee-sow.pdf",
+      "json_path": "/samples/fixed-fee-sow.json"
+    },
+    {
+      "id": "saas-order-form",
+      "title": "SaaS Order Form",
+      "subtitle": "Brightpath Software · Cascade Retail",
+      "blurb": "A subscription order form. Pulls the plan and seat count, annual fee, renewal terms, and data-export rights — verified against the source.",
+      "page_count": 2,
+      "pdf_path": "/samples/saas-order-form.pdf",
+      "json_path": "/samples/saas-order-form.json"
+    },
+    {
+      "id": "contributor-license-agreement",
+      "title": "Contributor License Agreement",
+      "subtitle": "Open Beacon Foundation",
+      "blurb": "An open-source CLA. Surfaces the license grant, perpetual term, and as-is warranty disclaimer — the clauses that actually matter, each cited.",
+      "page_count": 2,
+      "pdf_path": "/samples/contributor-license-agreement.pdf",
+      "json_path": "/samples/contributor-license-agreement.json"
+    },
+    {
+      "id": "letter-agreement",
+      "title": "Engagement Letter",
+      "subtitle": "Harbor Lane Advisors · Tessellate Media",
+      "blurb": "A short advisory letter, not a formal contract. Shows the tool adapts to lightweight documents: scope, monthly fee, and effective date, each cited.",
+      "page_count": 1,
+      "pdf_path": "/samples/letter-agreement.pdf",
+      "json_path": "/samples/letter-agreement.json"
+    },
+    {
       "id": "purchase-invoice",
       "title": "Commercial Invoice",
       "subtitle": "Summit Office Supply · Lakeside Consulting",

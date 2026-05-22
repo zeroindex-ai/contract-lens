@@ -6,19 +6,13 @@
       "name": "Phoenix Industries Inc.",
       "role": "Client",
       "evidence_quote": "Phoenix Industries Inc., a Texas corporation",
-      "evidence_page": 1,
-      "confidence": 1,
-      "verified_page": 1,
-      "match_quality": "exact"
+      "evidence_page": 1
     },
     {
       "name": "BlueRiver Consulting Group LLC",
       "role": "Provider",
       "evidence_quote": "BlueRiver Consulting Group LLC, a California limited liability company",
-      "evidence_page": 1,
-      "confidence": 1,
-      "verified_page": 1,
-      "match_quality": "normalized"
+      "evidence_page": 1
     }
   ],
   "key_details": [
@@ -26,82 +20,55 @@
       "label": "Effective date",
       "value": "April 15, 2026",
       "evidence_quote": "April 15, 2026",
-      "evidence_page": 1,
-      "confidence": 1,
-      "verified_page": 1,
-      "match_quality": "exact"
+      "evidence_page": 1
     },
     {
       "label": "Term",
       "value": "Effective Date through September 30, 2026",
       "evidence_quote": "shall commence on the Effective Date and shall continue through September 30, 2026",
-      "evidence_page": 1,
-      "confidence": 1,
-      "verified_page": 1,
-      "match_quality": "exact"
+      "evidence_page": 1
     },
     {
       "label": "Fee",
       "value": "Fixed fee of USD $42,000 across three milestones ($10,000 / $16,000 / $16,000)",
       "evidence_quote": "fixed fee of forty-two thousand U.S. dollars (USD $42,000), payable as follows: $10,000 upon execution of this SOW; $16,000 upon completion of the Dagster cutover; and $16,000 upon completion of the operational handoff",
-      "evidence_page": 1,
-      "confidence": 1,
-      "verified_page": 1,
-      "match_quality": "normalized"
+      "evidence_page": 1
     },
     {
       "label": "Deliverables",
       "value": "Migration of the Airflow data pipeline to Dagster, with DAG conversions and historical backfill",
       "evidence_quote": "Migration of Client's data pipeline from the legacy Airflow 1.x environment to a managed Dagster deployment, including all DAG conversions and historical-backfill orchestration",
-      "evidence_page": 1,
-      "confidence": 1,
-      "verified_page": 1,
-      "match_quality": "normalized"
+      "evidence_page": 1
     },
     {
       "label": "IP ownership",
       "value": "Work made for hire — deliverables are the exclusive property of Client",
       "evidence_quote": "shall be considered \"work made for hire\" and shall be the exclusive property of Client",
-      "evidence_page": 1,
-      "confidence": 1,
-      "verified_page": 1,
-      "match_quality": "normalized"
+      "evidence_page": 1
     },
     {
       "label": "Termination",
       "value": "14 days' written notice by either party",
       "evidence_quote": "Either Party may terminate this SOW upon fourteen (14) days' written notice",
-      "evidence_page": 2,
-      "confidence": 1,
-      "verified_page": 2,
-      "match_quality": "normalized"
+      "evidence_page": 2
     },
     {
       "label": "Governing law",
       "value": "California",
       "evidence_quote": "laws of the State of California",
-      "evidence_page": 2,
-      "confidence": 1,
-      "verified_page": 2,
-      "match_quality": "exact"
+      "evidence_page": 2
     },
     {
       "label": "Kill fee",
       "value": "25% of unbilled fees if Client terminates for convenience",
       "evidence_quote": "kill fee equal to twenty-five percent (25%) of any unbilled fees remaining under this SOW",
-      "evidence_page": 2,
-      "confidence": 1,
-      "verified_page": 2,
-      "match_quality": "normalized"
+      "evidence_page": 2
     },
     {
       "label": "Limitation of liability",
       "value": "Capped at total fees paid under the SOW; no indirect or consequential damages",
       "evidence_quote": "aggregate liability arising out of or in connection with this SOW shall not exceed the total fees paid by Client to Provider under this SOW",
-      "evidence_page": 2,
-      "confidence": 1,
-      "verified_page": 2,
-      "match_quality": "normalized"
+      "evidence_page": 2
     }
   ]
 }

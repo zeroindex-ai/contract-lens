@@ -6,19 +6,13 @@
       "name": "Open Beacon Foundation",
       "role": "Foundation",
       "evidence_quote": "the Open Beacon Foundation, a Delaware nonprofit corporation",
-      "evidence_page": 1,
-      "confidence": 1,
-      "verified_page": 1,
-      "match_quality": "normalized"
+      "evidence_page": 1
     },
     {
       "name": "Contributor",
       "role": "Contributor",
       "evidence_quote": "the individual identified in the signature block below (\"You\" or \"Contributor\")",
-      "evidence_page": 1,
-      "confidence": 1,
-      "verified_page": 1,
-      "match_quality": "normalized"
+      "evidence_page": 1
     }
   ],
   "key_details": [
@@ -26,55 +20,37 @@
       "label": "Effective date",
       "value": "The date the Contributor signs",
       "evidence_quote": "effective as of the date signed by You below (the \"Effective Date\")",
-      "evidence_page": 1,
-      "confidence": 1,
-      "verified_page": 1,
-      "match_quality": "normalized"
+      "evidence_page": 1
     },
     {
       "label": "Term",
       "value": "Perpetual; the licenses granted are irrevocable",
       "evidence_quote": "This Agreement is perpetual and the licenses granted herein are irrevocable",
-      "evidence_page": 1,
-      "confidence": 1,
-      "verified_page": 1,
-      "match_quality": "exact"
+      "evidence_page": 1
     },
     {
       "label": "Contribution",
       "value": "Any original work of authorship the Contributor intentionally submits to the Foundation",
       "evidence_quote": "any original work of authorship, including any modifications or additions to an existing work, that You intentionally submit to the Foundation",
-      "evidence_page": 1,
-      "confidence": 1,
-      "verified_page": 1,
-      "match_quality": "normalized"
+      "evidence_page": 1
     },
     {
       "label": "License grant",
       "value": "Perpetual, worldwide, non-exclusive, royalty-free, irrevocable copyright license to the Foundation and downstream recipients",
       "evidence_quote": "You hereby grant to the Foundation and to recipients of software distributed by the Foundation a perpetual, worldwide, non-exclusive, no-charge, royalty-free, irrevocable copyright license",
-      "evidence_page": 1,
-      "confidence": 1,
-      "verified_page": 1,
-      "match_quality": "normalized"
+      "evidence_page": 1
     },
     {
       "label": "Governing law",
       "value": "Delaware",
       "evidence_quote": "laws of the State of Delaware, excluding its conflict of laws principles",
-      "evidence_page": 2,
-      "confidence": 1,
-      "verified_page": 2,
-      "match_quality": "normalized"
+      "evidence_page": 2
     },
     {
       "label": "Warranty",
       "value": "Contributions provided AS IS, without warranties of title, non-infringement, merchantability, or fitness",
       "evidence_quote": "WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied, including, without limitation, any warranties or conditions of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A PARTICULAR PURPOSE",
-      "evidence_page": 2,
-      "confidence": 0.9764150943396226,
-      "verified_page": 2,
-      "match_quality": "fuzzy"
+      "evidence_page": 2
     }
   ]
 }

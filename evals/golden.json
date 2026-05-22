@@ -28,6 +28,73 @@
       }
     },
     {
+      "id": "consulting-msa",
+      "category": "msa",
+      "question": "consulting-msa",
+      "tags": ["contract"],
+      "metadata": {
+        "expected": {
+          "document_type": ["services agreement"],
+          "parties": ["Meridian", "Atlas"],
+          "key_facts": ["$250", "new york"]
+        }
+      }
+    },
+    {
+      "id": "fixed-fee-sow",
+      "category": "sow",
+      "question": "fixed-fee-sow",
+      "tags": ["contract"],
+      "metadata": {
+        "expected": {
+          "document_type": ["statement of work"],
+          "parties": ["Phoenix", "BlueRiver"],
+          "key_facts": ["$42,000", "california"]
+        }
+      }
+    },
+    {
+      "id": "saas-order-form",
+      "category": "order-form",
+      "question": "saas-order-form",
+      "tags": ["contract"],
+      "metadata": {
+        "expected": {
+          "document_type": ["order form"],
+          "parties": ["Brightpath", "Cascade"],
+          "key_facts": ["$48,000", "california"]
+        }
+      }
+    },
+    {
+      "id": "contributor-license-agreement",
+      "category": "cla",
+      "question": "contributor-license-agreement",
+      "tags": ["contract", "negative-control"],
+      "metadata": {
+        "expected": {
+          "document_type": ["contributor license"],
+          "parties": ["Open Beacon"],
+          "key_facts": ["perpetual", "delaware"],
+          "must_not": ["kill fee"]
+        }
+      }
+    },
+    {
+      "id": "letter-agreement",
+      "category": "letter",
+      "question": "letter-agreement",
+      "tags": ["non-contract", "negative-control"],
+      "metadata": {
+        "expected": {
+          "document_type": ["letter"],
+          "parties": ["Harbor Lane", "Tessellate"],
+          "key_facts": ["$8,000"],
+          "must_not": ["governing law"]
+        }
+      }
+    },
+    {
       "id": "purchase-invoice",
       "category": "non-contract",
       "question": "purchase-invoice",

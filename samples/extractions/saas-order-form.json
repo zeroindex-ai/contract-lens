@@ -1,0 +1,68 @@
+{
+  "document_type": "SaaS Order Form",
+  "summary": "An order form under which Brightpath Software provides Cascade Retail Group its Analytics Platform (Business plan, 50 seats) on a 12-month auto-renewing subscription for USD $48,000 per year.",
+  "parties": [
+    {
+      "name": "Brightpath Software, Inc.",
+      "role": "Provider",
+      "evidence_quote": "Brightpath Software, Inc.",
+      "evidence_page": 1
+    },
+    {
+      "name": "Cascade Retail Group, LLC",
+      "role": "Customer",
+      "evidence_quote": "Cascade Retail Group, LLC",
+      "evidence_page": 1
+    }
+  ],
+  "key_details": [
+    {
+      "label": "Effective date",
+      "value": "March 1, 2026",
+      "evidence_quote": "entered into as of March 1, 2026",
+      "evidence_page": 1
+    },
+    {
+      "label": "Subscription",
+      "value": "Brightpath Analytics Platform — Business plan, up to 50 named user seats, with email support and a 99.9% uptime SLA",
+      "evidence_quote": "provisioned for up to fifty (50) named user seats, together with standard email support and a 99.9% uptime service level",
+      "evidence_page": 1
+    },
+    {
+      "label": "Term",
+      "value": "12 months initial, auto-renewing for successive 12-month terms; 30 days' non-renewal notice",
+      "evidence_quote": "The initial subscription term is twelve (12) months from the Effective Date",
+      "evidence_page": 1
+    },
+    {
+      "label": "Fee",
+      "value": "USD $48,000 annual subscription fee, invoiced annually in advance, net 30",
+      "evidence_quote": "annual subscription fee of forty-eight thousand U.S. dollars (USD $48,000)",
+      "evidence_page": 1
+    },
+    {
+      "label": "IP / license",
+      "value": "Provider retains all IP; Customer gets a non-exclusive, non-transferable license for internal business use during the term",
+      "evidence_quote": "non-exclusive, non-transferable license to access and use the platform during the subscription term",
+      "evidence_page": 1
+    },
+    {
+      "label": "Termination",
+      "value": "Either party may terminate for material breach uncured after 30 days; 30-day data export window",
+      "evidence_quote": "terminate this Order for material breach that remains uncured thirty (30) days after written notice",
+      "evidence_page": 1
+    },
+    {
+      "label": "Limitation of liability",
+      "value": "No indirect, incidental, or consequential damages; capped at fees paid in the trailing 12 months",
+      "evidence_quote": "aggregate liability arising out of or related to this Order shall not exceed the total fees paid by the Customer in the twelve (12) months preceding the claim",
+      "evidence_page": 2
+    },
+    {
+      "label": "Governing law",
+      "value": "California",
+      "evidence_quote": "laws of the State of California",
+      "evidence_page": 2
+    }
+  ]
+}
