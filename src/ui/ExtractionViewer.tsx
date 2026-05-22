@@ -74,6 +74,7 @@ export function ExtractionViewer({
   }
 
   const summary = summarize(extraction);
+  const detailCount = extraction.key_details.length;
 
   return (
     <section className="pt-6 pb-24">
@@ -82,53 +83,39 @@ export function ExtractionViewer({
           &larr; BACK TO SAMPLES
         </button>
       )}
-      {sourceLabel && <div className="source-line">{sourceLabel}</div>}
-
-      {/* document header */}
-      <div className="doc-header">
-        <h1 className="doc-type">{extraction.document_type}</h1>
+      {/* compact header: type + status + meta on one row, summary below */}
+      <div className="viewer-head">
+        <div className="viewer-head-row">
+          <div className="viewer-head-id">
+            {sourceLabel && <div className="source-line">{sourceLabel}</div>}
+            <h1 className="doc-type">{extraction.document_type}</h1>
+          </div>
+          <div className="viewer-head-status">
+            <div className={`verify-status ${summary.review === 0 ? 'ok' : 'warn'}`}>
+              <span className="dot" aria-hidden="true"></span>
+              {summary.review === 0 ? 'Fully verified' : `${summary.review} flagged for review`}
+            </div>
+            <div className="viewer-head-meta">
+              {detailCount} {detailCount === 1 ? 'detail' : 'details'}
+              {metadata?.page_count
+                ? ` · ${metadata.page_count} ${metadata.page_count === 1 ? 'page' : 'pages'}`
+                : ''}
+              {metadata?.model ? ` · ${metadata.model}` : ''}
+            </div>
+          </div>
+        </div>
         {extraction.summary && <p className="doc-summary">{extraction.summary}</p>}
-      </div>
-
-      {/* summary strip */}
-      <div className="summary-strip">
-        <div className="stat">
-          <span className="n" style={{ color: 'var(--accent-go)' }}>
-            {summary.verified}
+        <div className="legend">
+          <span className="legend-item">
+            <span className="legend-dot dot-green"></span> verified
           </span>
-          <span className="k">verified</span>
-        </div>
-        <div className="stat">
-          <span className="n" style={{ color: summary.review > 0 ? 'var(--error)' : 'var(--muted-2)' }}>
-            {summary.review}
+          <span className="legend-item">
+            <span className="legend-dot dot-amber"></span> low confidence
           </span>
-          <span className="k">needs review</span>
-        </div>
-        <div className="summary-meter" aria-hidden="true">
-          <span style={{ flex: summary.verified, background: 'var(--accent-go)' }}></span>
-          <span style={{ flex: summary.review, background: 'var(--error)' }}></span>
-        </div>
-        <div className="summary-divider"></div>
-        <div className="summary-meta">
-          {metadata?.model && <span>{metadata.model}</span>}
-          <span>
-            {metadata?.page_count ? `${metadata.page_count} pages · ` : ''}
-            {summary.total} details
+          <span className="legend-item">
+            <span className="legend-dot dot-red"></span> not verified
           </span>
         </div>
-      </div>
-
-      {/* legend */}
-      <div className="legend">
-        <span className="legend-item">
-          <span className="legend-dot dot-green"></span> verified &mdash; quote found on the cited page
-        </span>
-        <span className="legend-item">
-          <span className="legend-dot dot-amber"></span> low confidence
-        </span>
-        <span className="legend-item">
-          <span className="legend-dot dot-red"></span> not verified
-        </span>
       </div>
 
       <WarningBanner verified={extraction} />
