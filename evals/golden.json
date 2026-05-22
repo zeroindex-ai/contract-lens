@@ -90,6 +90,94 @@
           }
         }
       }
+    },
+    {
+      "id": "employment-agreement",
+      "category": "employment",
+      "question": "employment-agreement",
+      "tags": ["clean"],
+      "metadata": {
+        "pdf": "employment-agreement.pdf",
+        "expected": {
+          "parties": ["Northwind Analytics", "Jordan Rivera"],
+          "fields": {
+            "effective_date": [],
+            "term": [],
+            "payment_terms": ["$145,000"],
+            "deliverables": [],
+            "ip_ownership": [],
+            "termination_clause": [],
+            "governing_law": ["washington"],
+            "kill_fee": null,
+            "limitation_of_liability": null
+          }
+        }
+      }
+    },
+    {
+      "id": "saas-order-form",
+      "category": "saas",
+      "question": "saas-order-form",
+      "tags": ["clean", "tables"],
+      "metadata": {
+        "pdf": "saas-order-form.pdf",
+        "expected": {
+          "parties": ["Brightpath Software", "Cascade Retail"],
+          "fields": {
+            "effective_date": [],
+            "term": ["12 month"],
+            "payment_terms": ["$48,000"],
+            "deliverables": [],
+            "ip_ownership": [],
+            "termination_clause": [],
+            "governing_law": ["california"],
+            "kill_fee": null,
+            "limitation_of_liability": []
+          }
+        }
+      }
+    },
+    {
+      "id": "letter-agreement",
+      "category": "letter",
+      "question": "letter-agreement",
+      "tags": ["edge", "absent-fields"],
+      "metadata": {
+        "pdf": "letter-agreement.pdf",
+        "expected": {
+          "parties": ["Harbor Lane", "Tessellate Media"],
+          "fields": {
+            "effective_date": [],
+            "payment_terms": ["$8,000"],
+            "deliverables": [],
+            "ip_ownership": null,
+            "termination_clause": null,
+            "governing_law": null,
+            "kill_fee": null,
+            "limitation_of_liability": null
+          }
+        }
+      }
+    },
+    {
+      "id": "purchase-invoice",
+      "category": "non-contract",
+      "question": "purchase-invoice",
+      "tags": ["negative-control"],
+      "metadata": {
+        "pdf": "purchase-invoice.pdf",
+        "expected": {
+          "parties": [],
+          "fields": {
+            "term": null,
+            "ip_ownership": null,
+            "termination_clause": null,
+            "governing_law": null,
+            "kill_fee": null,
+            "limitation_of_liability": null
+          }
+        }
+      }
     }
   ]
 }

@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Invoice — Sample</title>
+    <link rel="stylesheet" href="./_contract.css" />
+    <style>
+      .invoice-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 18pt; }
+      .invoice-meta { font-size: 10pt; text-align: right; }
+      table.lines { width: 100%; border-collapse: collapse; margin: 12pt 0; font-size: 10pt; }
+      table.lines th, table.lines td { border-bottom: 1px solid #ccc; padding: 6pt 8pt; text-align: left; }
+      table.lines td.amt, table.lines th.amt { text-align: right; }
+      .totals { width: 40%; margin-left: auto; font-size: 10pt; }
+      .totals td { padding: 4pt 8pt; }
+      .totals .grand { font-weight: bold; border-top: 2px solid #333; }
+    </style>
+  </head>
+  <body>
+    <div class="sample-banner">
+      SAMPLE — synthetic content for the contract-lens demo. This is an invoice, not a contract.
+    </div>
+
+    <div class="invoice-head">
+      <div>
+        <h1 style="text-align: left; margin: 0">Invoice</h1>
+        <div style="font-size: 10pt; margin-top: 6pt">
+          <strong>Summit Office Supply Co.</strong><br />
+          1820 Commerce Drive, Portland<br />
+          billing@summitoffice.example
+        </div>
+      </div>
+      <div class="invoice-meta">
+        <div><strong>Invoice #:</strong> INV-20485</div>
+        <div><strong>Invoice date:</strong> April 3, 2026</div>
+        <div><strong>Due date:</strong> May 3, 2026</div>
+        <div><strong>Terms:</strong> Net 30</div>
+      </div>
+    </div>
+
+    <div style="font-size: 10pt; margin-bottom: 10pt">
+      <strong>Bill to:</strong><br />
+      Lakeside Consulting LLC<br />
+      77 Harbor Street, Suite 300
+    </div>
+
+    <table class="lines">
+      <thead>
+        <tr>
+          <th>Description</th>
+          <th class="amt">Qty</th>
+          <th class="amt">Unit price</th>
+          <th class="amt">Amount</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Ergonomic task chair</td><td class="amt">6</td><td class="amt">$420.00</td><td class="amt">$2,520.00</td></tr>
+        <tr><td>Height-adjustable desk</td><td class="amt">4</td><td class="amt">$680.00</td><td class="amt">$2,720.00</td></tr>
+        <tr><td>Monitor arm, dual</td><td class="amt">8</td><td class="amt">$110.00</td><td class="amt">$880.00</td></tr>
+        <tr><td>Delivery and assembly</td><td class="amt">1</td><td class="amt">$300.00</td><td class="amt">$300.00</td></tr>
+      </tbody>
+    </table>
+
+    <table class="totals">
+      <tr><td>Subtotal</td><td class="amt" style="text-align: right">$6,420.00</td></tr>
+      <tr><td>Tax (0%)</td><td class="amt" style="text-align: right">$0.00</td></tr>
+      <tr class="grand"><td>Total due</td><td class="amt" style="text-align: right">$6,420.00</td></tr>
+    </table>
+
+    <p style="font-size: 9pt; margin-top: 18pt; color: #555">
+      Please remit payment within 30 days. Make checks payable to Summit Office Supply Co. Thank you for
+      your business.
+    </p>
+  </body>
+</html>
