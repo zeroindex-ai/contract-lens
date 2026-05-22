@@ -3,20 +3,18 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { db } from '@/db/client';
 import { fmtTs } from '@/lib/format';
-import { SCALAR_FIELD_KEYS, FIELD_LABELS } from '@/schema/extraction';
-import type { VerifiedContractExtraction, VerifiedField } from '@/lib/verify';
+import type { MatchQuality, VerifiedDocumentExtraction } from '@/lib/verify';
 import { bandFor } from '@/ui/confidence';
 
 export const dynamic = 'force-dynamic';
 export const metadata: Metadata = { title: 'Extraction · Admin · Lens · ZeroIndex' };
 
-function Conf({ field }: { field: { confidence: number; match_quality: VerifiedField['match_quality'] } }) {
-  if (field.match_quality === 'null-field') return <span className="muted-2">—</span>;
-  const band = bandFor(field.match_quality, field.confidence);
+function Conf({ confidence, matchQuality }: { confidence: number; matchQuality: MatchQuality }) {
+  const band = bandFor(confidence);
   const color = band === 'green' ? 'var(--accent-go)' : band === 'red' ? 'var(--error)' : 'var(--warn)';
   return (
     <span style={{ color }}>
-      {field.confidence.toFixed(2)} <span className="muted-2">· {field.match_quality}</span>
+      {confidence.toFixed(2)} <span className="muted-2">· {matchQuality}</span>
     </span>
   );
 }
@@ -31,8 +29,8 @@ export default async function ExtractionDetailPage({ params }: { params: Promise
   const row = res.rows[0];
   if (!row) notFound();
 
-  const meta = JSON.parse(String(row.metadata_json)) as { model?: string; latency_ms?: number };
-  const extraction = JSON.parse(String(row.extracted_json)) as VerifiedContractExtraction;
+  const meta = JSON.parse(String(row.metadata_json)) as { model?: string };
+  const extraction = JSON.parse(String(row.extracted_json)) as VerifiedDocumentExtraction;
 
   return (
     <section className="pt-10 pb-24">
@@ -42,7 +40,8 @@ export default async function ExtractionDetailPage({ params }: { params: Promise
         </Link>
       </div>
       <h1 className="text-3xl md:text-4xl font-bold tracking-tight">
-        Extraction <span className="muted-2">#{String(row.id).slice(0, 8)}</span>
+        {extraction.document_type || 'Extraction'}{' '}
+        <span className="muted-2">#{String(row.id).slice(0, 8)}</span>
       </h1>
       <p className="mt-4 muted text-base leading-relaxed">
         {String(row.source)} <span className="muted-2">·</span> {fmtTs(Number(row.created_at))}{' '}
@@ -55,13 +54,14 @@ export default async function ExtractionDetailPage({ params }: { params: Promise
           </>
         ) : null}
       </p>
+      {extraction.summary && <p className="mt-2 muted text-[15px] leading-relaxed">{extraction.summary}</p>}
 
       <div className="card mt-8">
         <div className="table-scroll">
           <table className="admin-table">
             <thead>
               <tr>
-                <th>Field</th>
+                <th>Detail</th>
                 <th>Value</th>
                 <th>Confidence</th>
                 <th>Page</th>
@@ -73,26 +73,21 @@ export default async function ExtractionDetailPage({ params }: { params: Promise
                   <td>Party · {p.role}</td>
                   <td className="question-wide">{p.name}</td>
                   <td>
-                    <Conf field={p} />
+                    <Conf confidence={p.confidence} matchQuality={p.match_quality} />
                   </td>
-                  <td className="num-cell">{p.verified_page ?? p.evidence_page ?? '—'}</td>
+                  <td className="num-cell">{p.verified_page ?? p.evidence_page}</td>
                 </tr>
               ))}
-              {SCALAR_FIELD_KEYS.map((key) => {
-                const f = extraction[key];
-                return (
-                  <tr key={key}>
-                    <td>{FIELD_LABELS[key]}</td>
-                    <td className="question-wide">
-                      {f.value === null ? <span className="muted-2">Not in this contract</span> : f.value}
-                    </td>
-                    <td>
-                      <Conf field={f} />
-                    </td>
-                    <td className="num-cell">{f.verified_page ?? f.evidence_page ?? '—'}</td>
-                  </tr>
-                );
-              })}
+              {extraction.key_details.map((d, i) => (
+                <tr key={`detail-${i}`}>
+                  <td>{d.label}</td>
+                  <td className="question-wide">{d.value}</td>
+                  <td>
+                    <Conf confidence={d.confidence} matchQuality={d.match_quality} />
+                  </td>
+                  <td className="num-cell">{d.verified_page ?? d.evidence_page}</td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>

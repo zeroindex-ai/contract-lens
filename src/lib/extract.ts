@@ -1,10 +1,10 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { z } from 'zod';
-import { ContractExtractionSchema, type ContractExtraction } from '@/schema/extraction';
+import { DocumentExtractionSchema, type DocumentExtraction } from '@/schema/extraction';
 
 /**
  * Single Anthropic Messages API call: PDF (base64) → forced `tool_use` with
- * the ContractExtraction schema → Zod-validated typed result.
+ * the DocumentExtraction schema → Zod-validated typed result.
  *
  * Design decisions:
  * - Native Anthropic citations (`citations: {enabled: true}`) are NOT used.
@@ -26,29 +26,29 @@ import { ContractExtractionSchema, type ContractExtraction } from '@/schema/extr
 const DEFAULT_MODEL = 'claude-sonnet-4-6';
 
 /** Tool name the model is forced to call. */
-const TOOL_NAME = 'extract_contract';
+const TOOL_NAME = 'extract_document';
 
-const SYSTEM_PROMPT = `You extract structured fields from contracts. The user will upload a PDF contract; you must call the \`${TOOL_NAME}\` tool with the structured extraction.
+const SYSTEM_PROMPT = `You turn any official document (a contract, agreement, offer letter, invoice, policy, statement, form, …) into a concise, cited reference. The user uploads a PDF; you must call the \`${TOOL_NAME}\` tool with the structured extraction.
+
+Return:
+- \`document_type\`: a short, specific label for what this document is (e.g. "Mutual NDA", "Employment Offer Letter", "SaaS Order Form", "Commercial Invoice").
+- \`summary\`: one or two plain-language sentences capturing what the document is and does.
+- \`parties\`: the named people and organizations the document is between or about. Set \`role\` from the document's own language (Buyer, Seller, Employer, Employee, Vendor, Licensor, Discloser, …); use "Other" when no role is named.
+- \`key_details\`: the most meaningful labeled facts a reader would want as a quick reference instead of re-reading the document — dates, amounts, durations, identifiers, obligations, key terms, deadlines, locations, etc. Choose what matters for THIS document; there is no fixed list.
 
 Rules:
 
-1. For every field, the \`evidence_quote\` MUST be a verbatim substring of the PDF text — do not paraphrase, summarize, or normalize quotes, dates, or punctuation. Copy the text exactly as it appears.
+1. Every \`evidence_quote\` MUST be a verbatim substring of the PDF text — do not paraphrase, summarize, or normalize quotes, dates, or punctuation. Copy the text exactly as it appears.
 
-2. \`evidence_page\` is the 1-indexed page number in the PDF where \`evidence_quote\` appears.
+2. \`evidence_page\` is the 1-indexed page number where \`evidence_quote\` appears.
 
-3. If a field is genuinely not present in the contract, return all three of \`value\`, \`evidence_quote\`, and \`evidence_page\` as JSON null for that field. Use real null — NOT a placeholder string such as "Not specified", "N/A", "None", or "null". Do not invent a value, and do not infer one from related text. "Not in this contract" is a valid and useful answer.
+3. Prefer the shortest \`evidence_quote\` that unambiguously supports the value — typically 5–25 words. Padded quotes that don't actually contain the value are not acceptable.
 
-4. For \`parties\`: return one entry per distinct party. Set \`role\` based on how the contract identifies them (e.g., "Seller", "Buyer", "Provider", "Client", "Licensor", "Licensee", "Discloser", "Recipient"). Use "Other" only when the role isn't named.
+4. \`key_details\`: use a short, human label and a concise value. Capture only what's actually in the document — never invent a detail or infer one from absence. If something isn't present, simply leave it out (do NOT emit a row with a value like "Not specified" or "N/A"). Aim for the ~15 most important details; do not pad with trivia.
 
-5. Prefer the shortest \`evidence_quote\` that unambiguously supports the field — typically 5–25 words. A long quote is fine when needed; padded quotes that don't actually contain the value are not.
+5. Order \`key_details\` roughly by importance, most useful first.`;
 
-6. \`payment_terms\`: summarize the obligation (amount, currency, schedule) in \`value\`; quote the operative clause.
-
-7. \`term\`: the duration or end condition. "Until terminated" / "ongoing" are valid values when that's what the contract says.
-
-8. \`kill_fee\`, \`limitation_of_liability\`: many contracts omit these. Don't strain to find them; if absent, return all nulls.`;
-
-const USER_INSTRUCTION = `Extract the structured fields from this contract. Call the \`${TOOL_NAME}\` tool with the result. Remember: \`evidence_quote\` must be verbatim from the PDF.`;
+const USER_INSTRUCTION = `Extract a cited reference from this document. Call the \`${TOOL_NAME}\` tool with the result. Remember: every \`evidence_quote\` must be verbatim from the PDF, and only include details that are actually present.`;
 
 export interface ExtractionMetadata {
   model: string;
@@ -61,7 +61,7 @@ export interface ExtractionMetadata {
 }
 
 export interface ExtractionResult {
-  extraction: ContractExtraction;
+  extraction: DocumentExtraction;
   metadata: ExtractionMetadata;
 }
 
@@ -73,7 +73,7 @@ export interface ExtractOptions {
 }
 
 /**
- * Extract a structured ContractExtraction from a PDF buffer.
+ * Extract a structured DocumentExtraction from a PDF buffer.
  *
  * Throws:
  * - `ExtractionError` with `code: 'MODEL_RESPONSE_INVALID'` when the model
@@ -89,7 +89,7 @@ export async function extract(pdfBuffer: Uint8Array, options: ExtractOptions = {
   // returns arrays/objects as strings). Strict mode rejects numeric/length
   // constraints, so strip those from the wire schema — the Zod schema keeps
   // them for our own response validation.
-  const inputSchema = stripUnsupportedConstraints(z.toJSONSchema(ContractExtractionSchema));
+  const inputSchema = stripUnsupportedConstraints(z.toJSONSchema(DocumentExtractionSchema));
 
   const pdfBase64 = Buffer.from(pdfBuffer).toString('base64');
 
@@ -137,7 +137,7 @@ export async function extract(pdfBuffer: Uint8Array, options: ExtractOptions = {
     );
   }
 
-  const parsed = ContractExtractionSchema.safeParse(toolUse.input);
+  const parsed = DocumentExtractionSchema.safeParse(toolUse.input);
   if (!parsed.success) {
     throw new ExtractionError(
       'MODEL_RESPONSE_INVALID',

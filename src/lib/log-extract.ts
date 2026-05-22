@@ -1,5 +1,5 @@
 import type { ExtractionMetadata } from './extract';
-import type { MatchQuality, VerifiedContractExtraction } from './verify';
+import type { MatchQuality, VerifiedDocumentExtraction } from './verify';
 
 /**
  * Fire-and-forget POST to traces.zeroindex.ai per extraction. Mirrors
@@ -21,10 +21,12 @@ export interface ExtractEventPayload {
   ts_iso: string;
   page_count: number;
   outcome: 'ok' | 'extract_failed' | 'rate_limited' | 'bad_request';
-  /** Mean per-field confidence across all verified fields (parties + scalars). */
+  /** Mean confidence across all verified items (parties + key details). */
   mean_confidence: number | null;
-  /** Count of fields per match_quality bucket. */
+  /** Count of items per match_quality bucket. */
   match_quality_counts: Partial<Record<MatchQuality, number>>;
+  /** How many cited items the model returned (parties + key details). */
+  item_count: number;
   /** Metadata pulled from extract.ts — null when extraction wasn't attempted (e.g. rate-limited). */
   model: string | null;
   latency_ms: number | null;
@@ -35,7 +37,7 @@ export interface ExtractEventPayload {
 export interface LogExtractInput {
   pageCount: number;
   outcome: ExtractEventPayload['outcome'];
-  verified?: VerifiedContractExtraction;
+  verified?: VerifiedDocumentExtraction;
   metadata?: ExtractionMetadata;
 }
 
@@ -43,24 +45,15 @@ export function buildPayload(input: LogExtractInput): ExtractEventPayload {
   const { verified, metadata } = input;
 
   let meanConfidence: number | null = null;
+  let itemCount = 0;
   const counts: Partial<Record<MatchQuality, number>> = {};
 
   if (verified) {
-    const allFields = [
-      ...verified.parties,
-      verified.effective_date,
-      verified.term,
-      verified.payment_terms,
-      verified.deliverables,
-      verified.ip_ownership,
-      verified.termination_clause,
-      verified.governing_law,
-      verified.kill_fee,
-      verified.limitation_of_liability,
-    ];
-    const sum = allFields.reduce((s, f) => s + f.confidence, 0);
-    meanConfidence = allFields.length === 0 ? null : sum / allFields.length;
-    for (const f of allFields) {
+    const items = [...verified.parties, ...verified.key_details];
+    itemCount = items.length;
+    const sum = items.reduce((s, f) => s + f.confidence, 0);
+    meanConfidence = items.length === 0 ? null : sum / items.length;
+    for (const f of items) {
       counts[f.match_quality] = (counts[f.match_quality] ?? 0) + 1;
     }
   }
@@ -74,6 +67,7 @@ export function buildPayload(input: LogExtractInput): ExtractEventPayload {
     outcome: input.outcome,
     mean_confidence: meanConfidence,
     match_quality_counts: counts,
+    item_count: itemCount,
     model: metadata?.model ?? null,
     latency_ms: metadata?.latency_ms ?? null,
     input_tokens: metadata?.input_tokens ?? null,

@@ -12,9 +12,9 @@ export interface ConfidenceChipProps {
  * mechanism stays visible without crowding the resting state.
  */
 export function ConfidenceChip({ confidence, matchQuality }: ConfidenceChipProps) {
-  const band = bandFor(matchQuality, confidence);
+  const band = bandFor(confidence);
   const className = `chip chip-${band}`;
-  const label = matchQuality === 'null-field' ? '—' : confidence.toFixed(2);
+  const label = confidence.toFixed(2);
   const title = `${bandLabel(band)} · ${matchQuality}`;
 
   return (

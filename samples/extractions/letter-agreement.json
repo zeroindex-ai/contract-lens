@@ -1,0 +1,44 @@
+{
+  "document_type": "Engagement Letter",
+  "summary": "A short advisory engagement letter from Harbor Lane Advisors to Tessellate Media for go-to-market strategy work on an upcoming product launch, billed monthly.",
+  "parties": [
+    {
+      "name": "Harbor Lane Advisors",
+      "role": "Advisor",
+      "evidence_quote": "Thank you for engaging Harbor Lane Advisors",
+      "evidence_page": 1
+    },
+    {
+      "name": "Tessellate Media, Inc.",
+      "role": "Client",
+      "evidence_quote": "advisory services to Tessellate Media, Inc.",
+      "evidence_page": 1
+    }
+  ],
+  "key_details": [
+    {
+      "label": "Effective date",
+      "value": "February 10, 2026",
+      "evidence_quote": "effective as of February 10, 2026",
+      "evidence_page": 1
+    },
+    {
+      "label": "Scope of services",
+      "value": "Advise on go-to-market strategy: market positioning, pricing guidance, and a recommended channel plan",
+      "evidence_quote": "advise the Client on its go-to-market strategy for the upcoming product launch",
+      "evidence_page": 1
+    },
+    {
+      "label": "Fee",
+      "value": "USD $8,000 per month, invoiced monthly",
+      "evidence_quote": "eight thousand U.S. dollars (USD $8,000) per month",
+      "evidence_page": 1
+    },
+    {
+      "label": "Payment terms",
+      "value": "Invoices are payable on receipt",
+      "evidence_quote": "Invoices are payable on receipt",
+      "evidence_page": 1
+    }
+  ]
+}

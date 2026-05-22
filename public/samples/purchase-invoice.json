@@ -1,0 +1,80 @@
+{
+  "document_type": "Commercial Invoice",
+  "summary": "Invoice INV-20485 from Summit Office Supply Co. to Lakeside Consulting LLC for office furniture and assembly, totaling $6,420.00, due May 3, 2026 on Net 30 terms.",
+  "parties": [
+    {
+      "name": "Summit Office Supply Co.",
+      "role": "Vendor",
+      "evidence_quote": "Summit Office Supply Co.",
+      "evidence_page": 1,
+      "confidence": 1,
+      "verified_page": 1,
+      "match_quality": "exact"
+    },
+    {
+      "name": "Lakeside Consulting LLC",
+      "role": "Bill to",
+      "evidence_quote": "Lakeside Consulting LLC",
+      "evidence_page": 1,
+      "confidence": 1,
+      "verified_page": 1,
+      "match_quality": "exact"
+    }
+  ],
+  "key_details": [
+    {
+      "label": "Invoice number",
+      "value": "INV-20485",
+      "evidence_quote": "INV-20485",
+      "evidence_page": 1,
+      "confidence": 1,
+      "verified_page": 1,
+      "match_quality": "exact"
+    },
+    {
+      "label": "Invoice date",
+      "value": "April 3, 2026",
+      "evidence_quote": "April 3, 2026",
+      "evidence_page": 1,
+      "confidence": 1,
+      "verified_page": 1,
+      "match_quality": "exact"
+    },
+    {
+      "label": "Due date",
+      "value": "May 3, 2026",
+      "evidence_quote": "May 3, 2026",
+      "evidence_page": 1,
+      "confidence": 1,
+      "verified_page": 1,
+      "match_quality": "exact"
+    },
+    {
+      "label": "Payment terms",
+      "value": "Net 30",
+      "evidence_quote": "Net 30",
+      "evidence_page": 1,
+      "confidence": 1,
+      "verified_page": 1,
+      "match_quality": "exact"
+    },
+    {
+      "label": "Total due",
+      "value": "$6,420.00",
+      "evidence_quote": "$6,420.00",
+      "evidence_page": 1,
+      "confidence": 1,
+      "verified_page": 1,
+      "match_quality": "exact"
+    },
+    {
+      "label": "Largest line item",
+      "value": "Height-adjustable desk ×4 — $2,720.00",
+      "evidence_quote": "Height-adjustable desk",
+      "evidence_page": 1,
+      "confidence": 1,
+      "verified_page": 1,
+      "match_quality": "exact"
+    }
+  ]
+}

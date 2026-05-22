@@ -1,7 +1,7 @@
 import type { Client } from '@libsql/client';
 import { randomUUID } from 'node:crypto';
 import type { ExtractionMetadata } from './extract';
-import type { VerifiedContractExtraction } from './verify';
+import type { VerifiedDocumentExtraction } from './verify';
 
 /**
  * Persist one extraction row. Raw PDF is NOT stored — only sha256, page
@@ -11,7 +11,7 @@ export interface PersistInput {
   sha256: string;
   pageCount: number;
   source: 'upload' | `sample:${string}`;
-  verified: VerifiedContractExtraction;
+  verified: VerifiedDocumentExtraction;
   metadata: ExtractionMetadata;
   ipBucket: string;
 }

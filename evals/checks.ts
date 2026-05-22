@@ -1,33 +1,28 @@
 // Custom eval-pack checks for contract-lens.
 //
-// contract-lens isn't a Q&A pipeline, so the built-in must_mention / citation
-// checks don't fit. Instead the subject runs the real extraction + verification
-// pipeline and stashes the VerifiedContractExtraction on result.metadata; these
-// checks read it and compare against the per-contract ground truth carried on
-// item.metadata.expected (see evals/golden.json).
+// The subject runs the real extraction + verification pipeline and stashes the
+// VerifiedDocumentExtraction on result.metadata; these checks read it and
+// compare against the per-document ground truth on item.metadata.expected
+// (see evals/golden.json). Extraction is open (no fixed field list), so the
+// ground truth is expressed as facts that must appear among key_details, the
+// expected document type, the parties, and (for negative controls) labels that
+// must NOT be fabricated.
 
 import type { Check, GoldenItem, PartialResult } from '@zeroindex-ai/eval-pack';
-import { SCALAR_FIELD_KEYS } from '@/schema/extraction';
-import type { ScalarFieldKey } from '@/schema/extraction';
-import type { MatchQuality, VerifiedContractExtraction, VerifiedField } from '@/lib/verify';
+import type { MatchQuality, VerifiedDocumentExtraction } from '@/lib/verify';
 import { normalize } from '@/lib/match';
 
-/**
- * Per-field ground truth:
- *   - `null`        → the field must be ABSENT (model correctly returned null).
- *   - `[]`          → the field must be PRESENT, but we don't pin its wording.
- *   - `[s1, s2...]` → the field must be present and contain every substring
- *                     (compared after the same normalization the matcher uses).
- * A field key omitted from `fields` is not asserted at all.
- */
-export type ExpectedField = string[] | null;
-
 export interface Expected {
-  parties: string[];
-  fields: Partial<Record<ScalarFieldKey, ExpectedField>>;
+  /** Substrings the model's document_type must contain (case-insensitive). */
+  document_type?: string[];
+  /** Each must appear among the extracted party names. */
+  parties?: string[];
+  /** Each must appear in some key detail's label or value. */
+  key_facts?: string[];
+  /** None of these may appear in any key detail (no-hallucination control). */
+  must_not?: string[];
 }
 
-/** Match quality values that count as a successfully verified citation. */
 const VERIFIED: ReadonlySet<MatchQuality> = new Set<MatchQuality>(['exact', 'normalized', 'fuzzy']);
 
 function getExpected(item: GoldenItem): Expected {
@@ -36,99 +31,68 @@ function getExpected(item: GoldenItem): Expected {
   return expected;
 }
 
-function getExtraction(result: PartialResult): VerifiedContractExtraction {
-  const extraction = (result.metadata as { extraction?: VerifiedContractExtraction }).extraction;
+function getExtraction(result: PartialResult): VerifiedDocumentExtraction {
+  const extraction = (result.metadata as { extraction?: VerifiedDocumentExtraction }).extraction;
   if (!extraction) throw new Error(`result ${result.id} is missing metadata.extraction`);
   return extraction;
 }
 
-function contains(value: string, needle: string): boolean {
-  return normalize(value).includes(normalize(needle));
+function contains(haystack: string, needle: string): boolean {
+  return normalize(haystack).includes(normalize(needle));
 }
 
-/**
- * field_values — every asserted scalar field matches ground truth: absent fields
- * are absent, present fields are present, and pinned substrings appear in the value.
- */
-export const fieldValues: Check = (item, result) => {
-  const expected = getExpected(item);
-  const extraction = getExtraction(result);
-  const mismatches: Array<{ field: ScalarFieldKey; reason: string }> = [];
+/** The full searchable text of every key detail (label + value), joined. */
+function detailsText(extraction: VerifiedDocumentExtraction): string {
+  return extraction.key_details.map((d) => `${d.label} ${d.value}`).join(' • ');
+}
 
-  for (const key of SCALAR_FIELD_KEYS) {
-    const want = expected.fields[key];
-    if (want === undefined) continue; // not asserted
-    const field: VerifiedField = extraction[key];
-
-    if (want === null) {
-      if (field.value !== null) {
-        mismatches.push({ field: key, reason: `expected absent, got "${field.value}"` });
-      }
-      continue;
-    }
-
-    if (field.value === null) {
-      mismatches.push({ field: key, reason: 'expected present, got absent' });
-      continue;
-    }
-
-    for (const needle of want) {
-      if (!contains(field.value, needle)) {
-        mismatches.push({ field: key, reason: `value missing "${needle}"` });
-      }
-    }
-  }
-
-  return {
-    name: 'field_values',
-    ok: mismatches.length === 0,
-    detail: mismatches.length > 0 ? { mismatches } : undefined,
-  };
+/** document_type — the model's classification contains the expected substrings. */
+export const documentType: Check = (item, result) => {
+  const want = getExpected(item).document_type ?? [];
+  const actual = getExtraction(result).document_type;
+  const missing = want.filter((s) => !contains(actual, s));
+  return { name: 'document_type', ok: missing.length === 0, detail: missing.length ? { missing, actual } : undefined };
 };
 
 /** parties — every expected party name appears among the extracted parties. */
 export const partiesPresent: Check = (item, result) => {
-  const expected = getExpected(item);
-  const extraction = getExtraction(result);
-  const haystack = extraction.parties.map((p) => p.name).join(' • ');
-  const missing = expected.parties.filter((name) => !contains(haystack, name));
+  const want = getExpected(item).parties ?? [];
+  const names = getExtraction(result).parties.map((p) => p.name).join(' • ');
+  const missing = want.filter((s) => !contains(names, s));
+  return { name: 'parties', ok: missing.length === 0, detail: missing.length ? { missing, extracted: names } : undefined };
+};
 
-  return {
-    name: 'parties',
-    ok: missing.length === 0,
-    detail:
-      missing.length > 0 ? { missing, extracted: extraction.parties.map((p) => p.name) } : undefined,
-  };
+/** key_facts — each expected fact appears in some key detail (label or value). */
+export const keyFacts: Check = (item, result) => {
+  const want = getExpected(item).key_facts ?? [];
+  const text = detailsText(getExtraction(result));
+  const missing = want.filter((s) => !contains(text, s));
+  return { name: 'key_facts', ok: missing.length === 0, detail: missing.length ? { missing } : undefined };
+};
+
+/** must_not — none of the forbidden facts appear (no-hallucination control). */
+export const mustNot: Check = (item, result) => {
+  const forbidden = getExpected(item).must_not ?? [];
+  const text = detailsText(getExtraction(result));
+  const present = forbidden.filter((s) => contains(text, s));
+  return { name: 'must_not', ok: present.length === 0, detail: present.length ? { present } : undefined };
 };
 
 /**
- * citations_verified — the core "document intelligence, verified" assertion:
- * every field the model claims is present (and every party) must carry a citation
- * that deterministically lands in the source PDF on the right page. A self-reported
- * quote that is not-found (hallucinated) or wrong-page fails the item.
+ * citations_verified — the core "verified" assertion: every party and key detail
+ * the model returns must carry a citation that lands in the source PDF. A
+ * not-found (hallucinated) or wrong-page quote flags the item.
  */
 export const citationsVerified: Check = (_item, result) => {
   const extraction = getExtraction(result);
-  const offenders: Array<{ field: string; match_quality: MatchQuality }> = [];
-
-  for (const party of extraction.parties) {
-    if (!VERIFIED.has(party.match_quality)) {
-      offenders.push({ field: `party:${party.name}`, match_quality: party.match_quality });
-    }
+  const offenders: Array<{ item: string; match_quality: MatchQuality }> = [];
+  for (const p of extraction.parties) {
+    if (!VERIFIED.has(p.match_quality)) offenders.push({ item: `party:${p.name}`, match_quality: p.match_quality });
   }
-  for (const key of SCALAR_FIELD_KEYS) {
-    const field = extraction[key];
-    if (field.value === null) continue; // absent field: nothing to verify
-    if (!VERIFIED.has(field.match_quality)) {
-      offenders.push({ field: key, match_quality: field.match_quality });
-    }
+  for (const d of extraction.key_details) {
+    if (!VERIFIED.has(d.match_quality)) offenders.push({ item: d.label, match_quality: d.match_quality });
   }
-
-  return {
-    name: 'citations_verified',
-    ok: offenders.length === 0,
-    detail: offenders.length > 0 ? { offenders } : undefined,
-  };
+  return { name: 'citations_verified', ok: offenders.length === 0, detail: offenders.length ? { offenders } : undefined };
 };
 
-export const checks: Check[] = [fieldValues, partiesPresent, citationsVerified];
+export const checks: Check[] = [documentType, partiesPresent, keyFacts, mustNot, citationsVerified];

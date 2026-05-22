@@ -1,106 +1,59 @@
 import { z } from 'zod';
 
 /**
- * Schema for a structured contract extraction.
+ * Schema for a structured, cited extraction from any official document.
  *
- * Each scalar field is EITHER a full object (`value`, `evidence_quote`
- * verbatim from the PDF, `evidence_page`) OR `null` when the field isn't
- * present in the contract. Whole-field nullability (one union per field)
- * keeps the strict-tool-use union count low — three independently-nullable
- * properties per field would blow Anthropic strict mode's 16-union limit.
+ * The model classifies the document, writes a short summary, names the parties,
+ * and surfaces the most meaningful labeled details it finds — each one carrying
+ * a verbatim `evidence_quote` and the `evidence_page` it appears on. There is no
+ * fixed field list: `key_details` is open, so the tool adapts to whatever the
+ * document actually contains (a contract's governing law, an offer letter's
+ * start date and salary, an invoice's totals and due date, …).
  *
  * The verification layer (src/lib/verify.ts) deterministically matches each
- * field's `evidence_quote` against the PDF's extracted page text. Confidence
- * is computed there, not reported by the model.
- *
- * Field count: 10 (parties + 9 scalar fields).
+ * quote against the PDF's extracted page text; confidence is computed there,
+ * not reported by the model. An absent detail is simply not emitted — there is
+ * no null/"not in document" state to model.
  */
 
-const FieldData = z.object({
-  value: z.string(),
+/** A cited claim: a verbatim quote and the page it appears on. */
+const CitedShape = {
   evidence_quote: z.string(),
-  // The model's *claimed* page. Not constrained to >0 on purpose: strict tool
-  // use can't carry a `minimum` keyword (it's stripped from the wire schema),
-  // so the model occasionally emits 0 / an out-of-range page. Enforcing
-  // `.positive()` here would 500 the whole extraction over one bad number.
-  // verify() treats the page as a claim and searches the PDF regardless, so a
-  // bad page degrades to wrong-page / not-found instead of a hard failure.
+  // The model's *claimed* page. Not constrained to >0: strict tool use can't
+  // carry a `minimum` keyword (it's stripped from the wire schema), so the
+  // model occasionally emits 0 / an out-of-range page. verify() treats the page
+  // as a claim and searches the PDF regardless, so a bad page degrades to
+  // wrong-page / not-found instead of a hard parse failure.
   evidence_page: z.number().int(),
-});
+};
 
-/** A scalar field: the data object, or null when absent from the contract. */
-const Field = FieldData.nullable();
-
-/**
- * One party to the contract. Roles are freeform (Buyer/Seller/Provider/Client/
- * Licensor/Licensee/Other) — the model picks based on the contract's own
- * language. Each party carries its own page-anchored evidence.
- */
+/** One party to / named entity in the document. */
 const Party = z.object({
   name: z.string(),
+  /** Freeform role from the document's own language (Buyer, Employer, Employee,
+   *  Vendor, Licensor, …); "Other" when not named. */
   role: z.string(),
-  evidence_quote: z.string(),
-  // The model's *claimed* page. Not constrained to >0 on purpose: strict tool
-  // use can't carry a `minimum` keyword (it's stripped from the wire schema),
-  // so the model occasionally emits 0 / an out-of-range page. Enforcing
-  // `.positive()` here would 500 the whole extraction over one bad number.
-  // verify() treats the page as a claim and searches the PDF regardless, so a
-  // bad page degrades to wrong-page / not-found instead of a hard failure.
-  evidence_page: z.number().int(),
+  ...CitedShape,
 });
 
-export const ContractExtractionSchema = z.object({
+/** One meaningful, labeled detail the model chose to surface. */
+const KeyDetail = z.object({
+  /** Short human label, e.g. "Effective date", "Annual salary", "Governing law". */
+  label: z.string(),
+  /** The extracted value, concise. */
+  value: z.string(),
+  ...CitedShape,
+});
+
+export const DocumentExtractionSchema = z.object({
+  /** Model-classified document type, e.g. "Employment Offer Letter", "Mutual NDA", "Invoice". */
+  document_type: z.string(),
+  /** One- or two-sentence plain-language gist of the document. */
+  summary: z.string(),
   parties: z.array(Party),
-  effective_date: Field,
-  term: Field,
-  payment_terms: Field,
-  deliverables: Field,
-  ip_ownership: Field,
-  termination_clause: Field,
-  governing_law: Field,
-  kill_fee: Field,
-  limitation_of_liability: Field,
+  key_details: z.array(KeyDetail),
 });
 
-export type ContractExtraction = z.infer<typeof ContractExtractionSchema>;
-/** Field data when present (non-null). */
-export type ContractFieldData = z.infer<typeof FieldData>;
-/** A scalar field as the model returns it: data object or null. */
-export type ContractField = z.infer<typeof Field>;
+export type DocumentExtraction = z.infer<typeof DocumentExtractionSchema>;
 export type ContractParty = z.infer<typeof Party>;
-
-/**
- * Ordered list of scalar field keys. Used by the UI to render rows in a stable
- * order and by the verification layer to iterate fields uniformly.
- *
- * Excludes `parties` because parties is an array-of-objects, not a Field.
- */
-export const SCALAR_FIELD_KEYS = [
-  'effective_date',
-  'term',
-  'payment_terms',
-  'deliverables',
-  'ip_ownership',
-  'termination_clause',
-  'governing_law',
-  'kill_fee',
-  'limitation_of_liability',
-] as const;
-
-export type ScalarFieldKey = (typeof SCALAR_FIELD_KEYS)[number];
-
-/**
- * Human-readable labels for the UI (left-pane field rows, eval reports, etc).
- */
-export const FIELD_LABELS: Record<'parties' | ScalarFieldKey, string> = {
-  parties: 'Parties',
-  effective_date: 'Effective date',
-  term: 'Term',
-  payment_terms: 'Payment terms',
-  deliverables: 'Deliverables',
-  ip_ownership: 'IP ownership',
-  termination_clause: 'Termination',
-  governing_law: 'Governing law',
-  kill_fee: 'Kill fee',
-  limitation_of_liability: 'Limitation of liability',
-};
+export type KeyDetail = z.infer<typeof KeyDetail>;

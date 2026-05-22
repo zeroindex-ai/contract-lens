@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import type Anthropic from '@anthropic-ai/sdk';
 import { extract, ExtractionError } from './extract';
-import type { ContractExtraction } from '@/schema/extraction';
+import type { DocumentExtraction } from '@/schema/extraction';
 
 /**
  * Tests use a hand-rolled mock of the Anthropic client's `messages.create`,
@@ -12,28 +12,17 @@ import type { ContractExtraction } from '@/schema/extraction';
  * metadata mapping, and error handling.
  */
 
-const validExtraction: ContractExtraction = {
+const validExtraction: DocumentExtraction = {
+  document_type: 'Sales Agreement',
+  summary: 'A sales agreement between Acme Corp and Beta LLC.',
   parties: [
-    {
-      name: 'Acme Corp',
-      role: 'Seller',
-      evidence_quote: 'Acme Corp ("Seller")',
-      evidence_page: 1,
-    },
+    { name: 'Acme Corp', role: 'Seller', evidence_quote: 'Acme Corp ("Seller")', evidence_page: 1 },
   ],
-  effective_date: { value: '2026-05-17', evidence_quote: 'May 17, 2026', evidence_page: 1 },
-  term: { value: '3 years', evidence_quote: 'three (3) years', evidence_page: 2 },
-  payment_terms: { value: '$50,000', evidence_quote: '$50,000', evidence_page: 3 },
-  deliverables: { value: 'MVP', evidence_quote: 'the MVP', evidence_page: 2 },
-  ip_ownership: { value: 'work-for-hire', evidence_quote: 'work made for hire', evidence_page: 4 },
-  termination_clause: { value: '30 days', evidence_quote: '30 days notice', evidence_page: 5 },
-  governing_law: { value: 'Pennsylvania', evidence_quote: 'laws of Pennsylvania', evidence_page: 6 },
-  kill_fee: null,
-  limitation_of_liability: {
-    value: 'capped',
-    evidence_quote: 'liability shall not exceed',
-    evidence_page: 6,
-  },
+  key_details: [
+    { label: 'Effective date', value: '2026-05-17', evidence_quote: 'May 17, 2026', evidence_page: 1 },
+    { label: 'Term', value: '3 years', evidence_quote: 'three (3) years', evidence_page: 2 },
+    { label: 'Governing law', value: 'Pennsylvania', evidence_quote: 'laws of Pennsylvania', evidence_page: 6 },
+  ],
 };
 
 /** Build a fake Anthropic response with a single tool_use block. */
@@ -49,7 +38,7 @@ function makeResponse(toolInput: unknown, overrides: Record<string, unknown> = {
       {
         type: 'tool_use' as const,
         id: 'toolu_test',
-        name: 'extract_contract',
+        name: 'extract_document',
         input: toolInput,
       },
     ],
@@ -92,8 +81,8 @@ describe('extract', () => {
 
     const callArgs = create.mock.calls[0][0];
     expect(callArgs.model).toBe('claude-sonnet-4-6');
-    expect(callArgs.tools[0].name).toBe('extract_contract');
-    expect(callArgs.tool_choice).toEqual({ type: 'tool', name: 'extract_contract' });
+    expect(callArgs.tools[0].name).toBe('extract_document');
+    expect(callArgs.tool_choice).toEqual({ type: 'tool', name: 'extract_document' });
     // No thinking/output_config — incompatible with forced tool_choice.
     expect(callArgs.thinking).toBeUndefined();
 
@@ -126,7 +115,7 @@ describe('extract', () => {
   });
 
   it('throws ExtractionError when the tool input fails Zod validation', async () => {
-    const malformed = { ...validExtraction, effective_date: { value: 'X' } }; // missing evidence_quote, evidence_page
+    const malformed = { ...validExtraction, key_details: [{ label: 'X', value: 'y' }] }; // missing evidence_quote, evidence_page
     const { client } = makeClient(malformed);
 
     await expect(extract(fakePdf, { client })).rejects.toThrow(ExtractionError);
