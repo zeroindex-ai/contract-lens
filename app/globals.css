@@ -75,11 +75,27 @@ body {
 
 .site-header {
   background: var(--bg);
-  border-bottom: 1px solid transparent;
-  transition: border-color 0.2s ease;
 }
-.site-header.scrolled {
-  border-bottom-color: var(--line);
+
+/* Brand CTA pill — matches the "Start a project" button on zeroindex.ai. */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  background: linear-gradient(120deg, #18181b 0%, #27272a 100%);
+  color: #faf9f5;
+  border-radius: 9999px;
+  text-decoration: none;
+  transition:
+    box-shadow 0.2s ease,
+    transform 0.15s ease;
+}
+.btn-primary:hover {
+  box-shadow: 0 8px 24px -12px rgba(124, 58, 237, 0.35);
+  transform: translateY(-2px);
 }
 
 .brand-link {
@@ -729,10 +745,12 @@ body {
   overflow: auto;
   scrollbar-gutter: stable;
   background: #fff;
-  /* Center the page when it's shorter than the viewer so leftover height splits
-     top/bottom instead of pooling under the page. margin:auto on the stage (vs.
-     justify/align center) keeps the top reachable when zoomed past the edges. */
+  /* Top-align the page so its content starts at the top of the viewer (matching
+     the field list), instead of floating centered when the page is shorter than
+     a tall viewer. Horizontal centering via margin:0 auto on the stage keeps the
+     left edge reachable when zoomed past the width. */
   display: flex;
+  align-items: flex-start;
   /* Cap to the viewport so the whole sticky panel (sticky-top 88 + page-bar +
      this wrap + quote footer + padding ≈ 280px of chrome) always fits on
      screen. Then the inner scroll container is always fully visible, so
@@ -745,7 +763,7 @@ body {
 .pdf-stage {
   position: relative;
   line-height: 0;
-  margin: auto;
+  margin: 0 auto;
 }
 .pdf-canvas-wrap canvas {
   display: block;
@@ -831,7 +849,8 @@ body {
   background: #fff;
   border: 1px solid var(--line);
   border-radius: 10px;
-  padding: 16px 18px;
+  padding: 20px 20px 22px;
+  min-height: 132px;
   cursor: pointer;
   font: inherit;
   color: inherit;
@@ -860,9 +879,9 @@ body {
   margin-top: 3px;
 }
 .sample-card .sample-blurb {
-  margin-top: 8px;
+  margin-top: 12px;
   font-size: 12.5px;
-  line-height: 1.45;
+  line-height: 1.55;
   color: var(--muted);
 }
 
@@ -1051,18 +1070,22 @@ body {
   padding: 0;
   overflow: hidden;
 }
-/* Fixed height that always shows ~10 rows (sticky header ~33px + 10 rows ~41px
-   + bottom padding); fewer rows leave the frame at full height, more rows
-   scroll within it. */
+/* Shows the sticky header + ~10 rows before scrolling (matches traces.zeroindex.ai
+   /admin). Fewer rows shrink the frame to content; more rows scroll within it. */
 .table-scroll {
-  height: 470px;
+  max-height: 455px;
   overflow-y: auto;
   padding: 0 24px 8px;
 }
+/* Uniform data-grid type: every body cell is JetBrains Mono 13px; color carries
+   the hierarchy (muted metadata, ink for primary values via .question-wide). */
 .admin-table tbody td {
   padding: 10px 12px 10px 0;
   border-bottom: 1px solid var(--line);
   vertical-align: top;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 13px;
+  color: var(--muted);
 }
 .admin-table tbody tr:last-child td {
   border-bottom: none;
@@ -1093,7 +1116,7 @@ body {
   white-space: nowrap;
 }
 .admin-table .num-cell {
-  text-align: right;
+  text-align: left;
   font-variant-numeric: tabular-nums;
 }
 .admin-table .question-wide {

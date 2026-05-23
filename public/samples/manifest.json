@@ -4,7 +4,7 @@
       "id": "mutual-nda",
       "title": "Mutual NDA",
       "subtitle": "Acme Robotics · Globex Partners",
-      "blurb": "Short bilateral NDA. The tool surfaces the term, survival period, IP/license stance, governing law, and liability cap — each cited and verified against the page.",
+      "blurb": "Bilateral NDA — term, survival period, IP stance, governing law, liability cap.",
       "page_count": 2,
       "pdf_path": "/samples/mutual-nda.pdf",
       "json_path": "/samples/mutual-nda.json"
@@ -13,7 +13,7 @@
       "id": "employment-agreement",
       "title": "Employment Agreement",
       "subtitle": "Northwind Analytics · Jordan Rivera",
-      "blurb": "At-will offer. Pulls out the start date, position, salary, IP assignment, and governing law — the details you'd want as a quick reference instead of re-reading.",
+      "blurb": "At-will offer — start date, role, salary, IP assignment, governing law.",
       "page_count": 2,
       "pdf_path": "/samples/employment-agreement.pdf",
       "json_path": "/samples/employment-agreement.json"
@@ -22,7 +22,7 @@
       "id": "consulting-msa",
       "title": "Master Services Agreement",
       "subtitle": "Meridian Health · Atlas Advisors",
-      "blurb": "A consulting MSA billed hourly, with work ordered through individual SOWs. Surfaces the rate, auto-renewal terms, IP ownership, and liability cap — each cited.",
+      "blurb": "Hourly consulting MSA — rate, auto-renewal, IP ownership, liability cap.",
       "page_count": 3,
       "pdf_path": "/samples/consulting-msa.pdf",
       "json_path": "/samples/consulting-msa.json"
@@ -31,7 +31,7 @@
       "id": "fixed-fee-sow",
       "title": "Statement of Work",
       "subtitle": "Phoenix Industries · BlueRiver Consulting",
-      "blurb": "A fixed-fee data-pipeline migration SOW. Captures the milestone fee schedule, deliverables, kill fee, and termination terms, each cited to the page.",
+      "blurb": "Fixed-fee migration SOW — milestone fees, deliverables, kill fee.",
       "page_count": 2,
       "pdf_path": "/samples/fixed-fee-sow.pdf",
       "json_path": "/samples/fixed-fee-sow.json"
@@ -40,7 +40,7 @@
       "id": "saas-order-form",
       "title": "SaaS Order Form",
       "subtitle": "Brightpath Software · Cascade Retail",
-      "blurb": "A subscription order form. Pulls the plan and seat count, annual fee, renewal terms, and data-export rights — verified against the source.",
+      "blurb": "Subscription order — plan, seats, annual fee, renewal, data export.",
       "page_count": 2,
       "pdf_path": "/samples/saas-order-form.pdf",
       "json_path": "/samples/saas-order-form.json"
@@ -49,7 +49,7 @@
       "id": "contributor-license-agreement",
       "title": "Contributor License Agreement",
       "subtitle": "Open Beacon Foundation",
-      "blurb": "An open-source CLA. Surfaces the license grant, perpetual term, and as-is warranty disclaimer — the clauses that actually matter, each cited.",
+      "blurb": "Open-source CLA — license grant, perpetual term, as-is warranty.",
       "page_count": 2,
       "pdf_path": "/samples/contributor-license-agreement.pdf",
       "json_path": "/samples/contributor-license-agreement.json"
@@ -58,7 +58,7 @@
       "id": "letter-agreement",
       "title": "Engagement Letter",
       "subtitle": "Harbor Lane Advisors · Tessellate Media",
-      "blurb": "A short advisory letter, not a formal contract. Shows the tool adapts to lightweight documents: scope, monthly fee, and effective date, each cited.",
+      "blurb": "Short advisory letter, not a formal contract — scope, monthly fee, date.",
       "page_count": 1,
       "pdf_path": "/samples/letter-agreement.pdf",
       "json_path": "/samples/letter-agreement.json"
@@ -67,7 +67,7 @@
       "id": "purchase-invoice",
       "title": "Commercial Invoice",
       "subtitle": "Summit Office Supply · Lakeside Consulting",
-      "blurb": "Not a contract at all — a billing document. Shows the tool adapts: invoice number, dates, terms, total, and line items, each cited.",
+      "blurb": "Not a contract — a billing document. Number, dates, terms, total, line items.",
       "page_count": 1,
       "pdf_path": "/samples/purchase-invoice.pdf",
       "json_path": "/samples/purchase-invoice.json"

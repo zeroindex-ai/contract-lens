@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
-import Script from 'next/script';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -29,8 +28,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           Skip to content
         </a>
 
-        <header id="siteHeader" className="site-header sticky top-0 z-30">
-          <div className="max-w-6xl mx-auto px-6 md:px-10 py-5 flex items-center justify-between">
+        <header className="site-header sticky top-0 z-30">
+          <div className="max-w-6xl mx-auto px-6 md:px-10">
+            <div className="py-5 flex items-center justify-between border-b line">
             <a href="https://zeroindex.ai" className="brand-link" aria-label="ZeroIndex home">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -57,12 +57,11 @@ export default function RootLayout({ children }: { children: ReactNode }) {
               </svg>
               <span className="brand-name">ZeroIndex</span>
             </a>
-            <a
-              href="https://zeroindex.ai"
-              className="text-sm muted inline-link hover:opacity-80 transition-opacity"
-            >
-              &larr; zeroindex.ai
+            <a href="https://zeroindex.ai" className="btn-primary">
+              <span aria-hidden="true">&larr;</span>
+              zeroindex.ai
             </a>
+            </div>
           </div>
         </header>
 
@@ -76,9 +75,6 @@ export default function RootLayout({ children }: { children: ReactNode }) {
                 <a className="subtle" href="https://github.com/zeroindex-ai/contract-lens">
                   Source
                 </a>
-                <a className="subtle" href="https://github.com/zeroindex-ai/eval-pack">
-                  eval-pack
-                </a>
                 <a className="subtle" href="https://zeroindex.ai">
                   zeroindex.ai
                 </a>
@@ -86,10 +82,6 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             </div>
           </footer>
         </div>
-
-        <Script id="sticky-header-listener" strategy="afterInteractive">
-          {`(function(){var h=document.getElementById('siteHeader');if(!h)return;function f(){h.classList.toggle('scrolled',window.scrollY>4)}window.addEventListener('scroll',f,{passive:true});f()})();`}
-        </Script>
       </body>
     </html>
   );
