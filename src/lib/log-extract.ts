@@ -3,40 +3,46 @@ import type { MatchQuality, VerifiedDocumentExtraction } from './verify';
 
 /**
  * Fire-and-forget POST to traces.zeroindex.ai per extraction. Mirrors
- * ask-zeroindex/src/lib/logAsk pattern: keepalive request, errors swallowed,
- * zero latency added to the user-facing response.
+ * ask-zeroindex/src/lib/logAsk: keepalive request, errors swallowed, zero
+ * latency added to the user-facing response.
  *
- * Trace-pack v0.1's ingest only accepts `ask`-shape events. Whether we
- * extend its schema first or use a tolerant payload shape is the v0.2
- * coordination point for trace-pack — for now we send a `contract_extraction`
- * event type and trace-pack treats unknown types as no-ops (per its
- * passthrough() schema convention). When the multi-source UI lands in
- * trace-pack v0.2, contract-lens is its first proof point.
+ * Emits trace-pack's v0.2 generic event shape (`event` ≠ "ask"): a universal
+ * core (source / event / ts / model / status / latency / token usage) plus
+ * contract-lens-specific extension fields. trace-pack stores the core in typed
+ * columns (and computes cost from the tokens) and keeps the extension fields in
+ * `raw_json` via its passthrough schema. contract-lens is the first non-ask
+ * source — it lights up the multi-source overview + the non-RAG dashboard.
  */
 
+type Status = 'ok' | 'error';
+
 export interface ExtractEventPayload {
+  // trace-pack v0.2 generic-event core
   source: 'contract-lens';
-  type: 'contract_extraction';
-  request_id: string | null;
-  ts_iso: string;
-  page_count: number;
-  outcome: 'ok' | 'extract_failed' | 'rate_limited' | 'bad_request';
-  /** Mean confidence across all verified items (parties + key details). */
-  mean_confidence: number | null;
-  /** Count of items per match_quality bucket. */
-  match_quality_counts: Partial<Record<MatchQuality, number>>;
-  /** How many cited items the model returned (parties + key details). */
-  item_count: number;
-  /** Metadata pulled from extract.ts — null when extraction wasn't attempted (e.g. rate-limited). */
+  event: 'extract';
+  ts: string;
   model: string | null;
-  latency_ms: number | null;
-  input_tokens: number | null;
-  output_tokens: number | null;
+  status: Status;
+  /** Specific failure label when status = error (the route's outcome). */
+  outcomeReason?: string;
+  totalMs: number | null;
+  inputTokens: number | null;
+  outputTokens: number | null;
+  cacheCreationInputTokens: number | null;
+  cacheReadInputTokens: number | null;
+  // contract-lens `extract` extension — preserved in trace-pack's raw_json.
+  pageCount: number;
+  itemCount: number;
+  /** Mean confidence across all verified items (parties + key details). */
+  meanConfidence: number | null;
+  /** Count of items per match_quality bucket. */
+  matchQualityCounts: Partial<Record<MatchQuality, number>>;
+  requestId: string | null;
 }
 
 export interface LogExtractInput {
   pageCount: number;
-  outcome: ExtractEventPayload['outcome'];
+  outcome: 'ok' | 'extract_failed' | 'rate_limited' | 'bad_request';
   verified?: VerifiedDocumentExtraction;
   metadata?: ExtractionMetadata;
 }
@@ -60,18 +66,23 @@ export function buildPayload(input: LogExtractInput): ExtractEventPayload {
 
   return {
     source: 'contract-lens',
-    type: 'contract_extraction',
-    request_id: metadata?.request_id ?? null,
-    ts_iso: new Date().toISOString(),
-    page_count: input.pageCount,
-    outcome: input.outcome,
-    mean_confidence: meanConfidence,
-    match_quality_counts: counts,
-    item_count: itemCount,
+    event: 'extract',
+    ts: new Date().toISOString(),
     model: metadata?.model ?? null,
-    latency_ms: metadata?.latency_ms ?? null,
-    input_tokens: metadata?.input_tokens ?? null,
-    output_tokens: metadata?.output_tokens ?? null,
+    status: input.outcome === 'ok' ? 'ok' : 'error',
+    // 'ok' has no reason; the other outcomes are the failure label trace-pack
+    // surfaces as the event's outcome.
+    ...(input.outcome === 'ok' ? {} : { outcomeReason: input.outcome }),
+    totalMs: metadata?.latency_ms ?? null,
+    inputTokens: metadata?.input_tokens ?? null,
+    outputTokens: metadata?.output_tokens ?? null,
+    cacheCreationInputTokens: metadata?.cache_creation_input_tokens ?? null,
+    cacheReadInputTokens: metadata?.cache_read_input_tokens ?? null,
+    pageCount: input.pageCount,
+    itemCount,
+    meanConfidence,
+    matchQualityCounts: counts,
+    requestId: metadata?.request_id ?? null,
   };
 }
 
