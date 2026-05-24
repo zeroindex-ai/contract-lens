@@ -7,14 +7,62 @@ const verified: VerifiedDocumentExtraction = {
   document_type: 'Sales Agreement',
   summary: 'A sample.',
   parties: [
-    { name: 'Acme Corp', role: 'Seller', evidence_quote: 'Acme Corp', evidence_page: 1, confidence: 1, verified_page: 1, match_quality: 'exact' },
+    {
+      name: 'Acme Corp',
+      role: 'Seller',
+      evidence_quote: 'Acme Corp',
+      evidence_page: 1,
+      confidence: 1,
+      verified_page: 1,
+      match_quality: 'exact',
+    },
   ],
   key_details: [
-    { label: 'A', value: 'x', evidence_quote: 'x', evidence_page: 1, confidence: 1, verified_page: 1, match_quality: 'exact' },
-    { label: 'B', value: 'x', evidence_quote: 'x', evidence_page: 1, confidence: 0.8, verified_page: 1, match_quality: 'fuzzy' },
-    { label: 'C', value: 'x', evidence_quote: 'x', evidence_page: 1, confidence: 0, verified_page: null, match_quality: 'not-found' },
-    { label: 'D', value: 'x', evidence_quote: 'x', evidence_page: 1, confidence: 0.4, verified_page: 2, match_quality: 'wrong-page' },
-    { label: 'E', value: 'x', evidence_quote: 'x', evidence_page: 1, confidence: 1, verified_page: 1, match_quality: 'normalized' },
+    {
+      label: 'A',
+      value: 'x',
+      evidence_quote: 'x',
+      evidence_page: 1,
+      confidence: 1,
+      verified_page: 1,
+      match_quality: 'exact',
+    },
+    {
+      label: 'B',
+      value: 'x',
+      evidence_quote: 'x',
+      evidence_page: 1,
+      confidence: 0.8,
+      verified_page: 1,
+      match_quality: 'fuzzy',
+    },
+    {
+      label: 'C',
+      value: 'x',
+      evidence_quote: 'x',
+      evidence_page: 1,
+      confidence: 0,
+      verified_page: null,
+      match_quality: 'not-found',
+    },
+    {
+      label: 'D',
+      value: 'x',
+      evidence_quote: 'x',
+      evidence_page: 1,
+      confidence: 0.4,
+      verified_page: 2,
+      match_quality: 'wrong-page',
+    },
+    {
+      label: 'E',
+      value: 'x',
+      evidence_quote: 'x',
+      evidence_page: 1,
+      confidence: 1,
+      verified_page: 1,
+      match_quality: 'normalized',
+    },
   ],
 };
 
@@ -29,16 +77,32 @@ const metadata: ExtractionMetadata = {
 };
 
 describe('buildPayload', () => {
-  it('computes mean confidence across all items (parties + key details)', () => {
+  it('emits the trace-pack generic-event core', () => {
     const p = buildPayload({ pageCount: 6, outcome: 'ok', verified, metadata });
-    // 6 items: 1 + 1 + 0.8 + 0 + 0.4 + 1 = 4.2 / 6 = 0.70
-    expect(p.mean_confidence).toBeCloseTo(0.7, 2);
-    expect(p.item_count).toBe(6);
+    expect(p.source).toBe('contract-lens');
+    expect(p.event).toBe('extract');
+    expect(p.status).toBe('ok');
+    expect(p.outcomeReason).toBeUndefined();
+    expect(typeof p.ts).toBe('string');
   });
 
-  it('counts items per match_quality', () => {
+  it('maps token usage + latency to the core fields (so trace-pack can cost it)', () => {
     const p = buildPayload({ pageCount: 6, outcome: 'ok', verified, metadata });
-    expect(p.match_quality_counts).toEqual({
+    expect(p.model).toBe('claude-sonnet-4-6');
+    expect(p.totalMs).toBe(8234);
+    expect(p.inputTokens).toBe(50_000);
+    expect(p.outputTokens).toBe(1_500);
+    expect(p.cacheCreationInputTokens).toBe(0);
+    expect(p.cacheReadInputTokens).toBe(0);
+    expect(p.requestId).toBe('req_abc123');
+  });
+
+  it('computes mean confidence + item count across all items (extension fields)', () => {
+    const p = buildPayload({ pageCount: 6, outcome: 'ok', verified, metadata });
+    // 6 items: 1 + 1 + 0.8 + 0 + 0.4 + 1 = 4.2 / 6 = 0.70
+    expect(p.meanConfidence).toBeCloseTo(0.7, 2);
+    expect(p.itemCount).toBe(6);
+    expect(p.matchQualityCounts).toEqual({
       exact: 2,
       normalized: 1,
       fuzzy: 1,
@@ -47,21 +111,21 @@ describe('buildPayload', () => {
     });
   });
 
-  it('passes through metadata fields', () => {
-    const p = buildPayload({ pageCount: 6, outcome: 'ok', verified, metadata });
-    expect(p.request_id).toBe('req_abc123');
-    expect(p.model).toBe('claude-sonnet-4-6');
-    expect(p.latency_ms).toBe(8234);
-    expect(p.input_tokens).toBe(50_000);
+  it('maps a failure outcome to status=error + the reason label', () => {
+    const p = buildPayload({ pageCount: 0, outcome: 'extract_failed' });
+    expect(p.status).toBe('error');
+    expect(p.outcomeReason).toBe('extract_failed');
   });
 
   it('handles rate-limited outcome (no verified, no metadata)', () => {
     const p = buildPayload({ pageCount: 0, outcome: 'rate_limited' });
-    expect(p.mean_confidence).toBeNull();
-    expect(p.item_count).toBe(0);
-    expect(p.match_quality_counts).toEqual({});
+    expect(p.status).toBe('error');
+    expect(p.outcomeReason).toBe('rate_limited');
+    expect(p.meanConfidence).toBeNull();
+    expect(p.itemCount).toBe(0);
+    expect(p.matchQualityCounts).toEqual({});
     expect(p.model).toBeNull();
-    expect(p.outcome).toBe('rate_limited');
+    expect(p.inputTokens).toBeNull();
   });
 });
 
@@ -97,7 +161,8 @@ describe('logExtract', () => {
 
     const body = JSON.parse(init.body as string);
     expect(body.source).toBe('contract-lens');
-    expect(body.type).toBe('contract_extraction');
+    expect(body.event).toBe('extract');
+    expect(body.status).toBe('ok');
   });
 
   it('strips trailing slash from TRACE_PACK_URL', () => {
