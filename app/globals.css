@@ -909,7 +909,7 @@ body {
 .upload-zone .upload-meta {
   margin-top: 6px;
   font-family: 'JetBrains Mono', ui-monospace, monospace;
-  font-size: 10.5px;
+  font-size: 11px;
   letter-spacing: 0.06em;
   color: var(--muted-2);
 }
