@@ -868,19 +868,19 @@ body {
 }
 .sample-card .sample-title {
   font-weight: 600;
-  font-size: 14px;
+  font-size: 15px;
   color: var(--ink);
 }
 .sample-card .sample-subtitle {
   font-family: 'JetBrains Mono', ui-monospace, monospace;
-  font-size: 10.5px;
+  font-size: 11px;
   letter-spacing: 0.04em;
   color: var(--muted);
   margin-top: 3px;
 }
 .sample-card .sample-blurb {
   margin-top: 12px;
-  font-size: 12.5px;
+  font-size: 13.5px;
   line-height: 1.55;
   color: var(--muted);
 }
