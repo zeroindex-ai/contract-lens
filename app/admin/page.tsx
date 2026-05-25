@@ -11,25 +11,11 @@ export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = { title: 'Admin · Lens · ZeroIndex' };
 
-function startOfUtcDay(): number {
-  return Math.floor(new Date(new Date().toISOString().slice(0, 10) + 'T00:00:00.000Z').getTime() / 1000);
-}
-
 export default async function AdminPage() {
   const client = db();
-  const [recent, totalRes, todayRes] = await Promise.all([
-    client.execute(
-      'SELECT id, page_count, source, metadata_json, extracted_json, trace_id, created_at FROM extractions ORDER BY created_at DESC LIMIT 200'
-    ),
-    client.execute('SELECT COUNT(*) AS n FROM extractions'),
-    client.execute({
-      sql: 'SELECT COUNT(*) AS n FROM extractions WHERE created_at >= ?',
-      args: [startOfUtcDay()],
-    }),
-  ]);
-
-  const total = Number(totalRes.rows[0]?.n ?? 0);
-  const today = Number(todayRes.rows[0]?.n ?? 0);
+  const recent = await client.execute(
+    'SELECT id, page_count, source, metadata_json, extracted_json, trace_id, created_at FROM extractions ORDER BY created_at DESC LIMIT 200'
+  );
 
   const items = recent.rows.map((r) => {
     // Parse defensively: a single corrupt/legacy row must not 500 the whole list.
@@ -56,11 +42,7 @@ export default async function AdminPage() {
   return (
     <section className="pt-10 pb-24">
       <div className="label mb-3">Admin</div>
-      <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Extractions</h1>
-      <p className="mt-4 muted text-base leading-relaxed">
-        The raw PDF is never stored — only the extracted fields and run metadata.{' '}
-        <span className="mono">{total}</span> total · <span className="mono">{today}</span> today.
-      </p>
+      <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Lens</h1>
 
       <div className="card mt-8">
         <div className="table-scroll">
