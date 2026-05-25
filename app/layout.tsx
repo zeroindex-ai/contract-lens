@@ -4,7 +4,7 @@ import './globals.css';
 import { HeaderNav } from './HeaderNav';
 
 export const metadata: Metadata = {
-  title: 'Lens · ZeroIndex',
+  title: 'Contract Lens · ZeroIndex',
   description: 'Structured PDF extraction with verified citations. Document intelligence demo for ZeroIndex.',
 };
 
