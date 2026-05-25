@@ -5,8 +5,13 @@ import type { Client } from '@libsql/client';
  * Per-IP daily rate limit, backed by a single row in `rate_limits`.
  *
  * The IP itself is never persisted — only `sha256(ip + salt)`. Salt comes
- * from `RATE_LIMIT_SALT` env var; falls back to a constant (acceptable for
- * a single-tenant demo, but rotate if it ever leaks).
+ * from `RATE_LIMIT_SALT` env var. In production an unset/empty salt is a
+ * fail-closed error (an empty salt makes the IP hash trivially reversible by
+ * any attacker who knows the scheme, defeating the privacy guarantee); outside
+ * production it falls back to a constant for convenient local dev/tests. The
+ * env var is only read at request time (inside `bucketIp`), never at module
+ * scope — reading it top-level would make `next build` require the secret and
+ * break preview deploys.
  *
  * Day boundary is UTC midnight. Counter resets implicitly when `day` changes
  * — no eviction job needed; old rows just sit there until manual cleanup.
@@ -34,7 +39,13 @@ export interface RateLimitResult {
  * Hash an IP into the stable bucket the table uses. Same IP → same bucket.
  */
 export function bucketIp(ip: string): string {
-  const salt = process.env.RATE_LIMIT_SALT ?? 'contract-lens-v0.1-default-salt';
+  // Read lazily, at request time only — never at module scope.
+  const fromEnv = process.env.RATE_LIMIT_SALT;
+  if (process.env.NODE_ENV === 'production' && !fromEnv) {
+    // Fail closed: a missing salt in prod would silently weaken IP hashing.
+    throw new Error('RATE_LIMIT_SALT is not set — refusing to hash IPs with the dev fallback salt in production');
+  }
+  const salt = fromEnv || 'contract-lens-v0.1-default-salt';
   return createHash('sha256').update(`${salt}:${ip}`).digest('hex');
 }
 
