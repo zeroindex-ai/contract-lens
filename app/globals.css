@@ -1099,6 +1099,9 @@ body {
 .table-scroll {
   max-height: 455px;
   overflow-y: auto;
+  /* dense fixed-width grids exceed a phone's width — scroll sideways, don't clip.
+     Harmless on desktop (only engages when content overflows). */
+  overflow-x: auto;
   padding: 0 24px 8px;
 }
 /* Uniform data-grid type: every body cell is JetBrains Mono 13px; color carries
@@ -1149,4 +1152,17 @@ body {
 }
 .admin-table .muted-2 {
   color: var(--muted-2);
+}
+
+/* ---- Mobile (<= 640px) --------------------------------------------------
+   The admin grid scrolls sideways on phones (see .table-scroll); here we just
+   tighten chrome padding so the grid and cards get more width. (The document
+   viewer's responsive pass is tracked separately.) */
+@media (max-width: 640px) {
+  .card {
+    padding: 18px 16px;
+  }
+  .table-scroll {
+    padding: 0 16px 8px;
+  }
 }
