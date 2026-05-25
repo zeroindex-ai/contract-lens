@@ -58,7 +58,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
                 </svg>
                 <span className="brand-name">ZeroIndex</span>
               </a>
-              <HeaderNav appName="Lens" />
+              <HeaderNav appName="Contract Lens" />
             </div>
           </div>
         </header>

@@ -5,13 +5,7 @@ import type { VerifiedDocumentExtraction } from '@/lib/verify';
 import { SamplePicker, type SampleManifestEntry } from './SamplePicker';
 import { UploadZone } from './UploadZone';
 import { ExtractionViewer, type ExtractionMetadataShape } from './ExtractionViewer';
-import {
-  saveSession,
-  loadSession,
-  clearSession,
-  arrayBufferToBase64,
-  base64ToBlob,
-} from './session-store';
+import { saveSession, loadSession, clearSession, arrayBufferToBase64, base64ToBlob } from './session-store';
 
 export interface DemoShellProps {
   samples: SampleManifestEntry[];
@@ -147,12 +141,14 @@ export function DemoShell({ samples }: DemoShellProps) {
 
   return (
     <section className="pt-10 pb-24">
-      <div className="label mb-3">Lens</div>
-      <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Document intelligence &mdash; verified.</h1>
+      <div className="label mb-3">Contract Lens</div>
+      <h1 className="text-3xl md:text-4xl font-bold tracking-tight">
+        Document intelligence &mdash; verified.
+      </h1>
       <p className="mt-4 muted text-base leading-relaxed max-w-5xl">
         Upload any official document &mdash; a contract, offer letter, invoice, policy &mdash; or pick a
-        sample below. The tool pulls out the meaningful details and checks every one against the source
-        page; anything it can&rsquo;t verify is flagged, not silently passed through.
+        sample below. The tool pulls out the meaningful details and checks every one against the source page;
+        anything it can&rsquo;t verify is flagged, not silently passed through.
       </p>
 
       <h2 className="label mb-2 mt-12">Upload a document</h2>
