@@ -1165,4 +1165,57 @@ body {
   .table-scroll {
     padding: 0 16px 8px;
   }
+
+  /* ── PDF document viewer (admin detail / sample viewer) ───────────────────
+     The split already stacks to one column under 900px (citations list, then
+     the PDF card), and the citations pane flows naturally — its fixed-height
+     internal scroll is desktop-only. On phones we add: a tall canvas slice,
+     wrapping for the toolbar + doc-header status (they used nowrap and ran off
+     the edge), and ~40px touch targets on the page/zoom/export controls.
+     Canvas width is JS-fit to its container (PdfPreview), so the text layer and
+     citation highlights stay aligned at any width. */
+  .viewer-toolbar {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .doc-header-top {
+    /* status drops below the title instead of being squeezed beside it */
+    flex-direction: column;
+  }
+  .doc-header-status,
+  .doc-header-meta {
+    flex-wrap: wrap;
+    white-space: normal;
+  }
+  .summary-strip {
+    gap: 14px 18px;
+    padding: 16px;
+  }
+  .summary-meter {
+    min-width: 100%;
+  }
+  /* stacked layout → give the canvas a tall slice of the viewport; the page
+     scrolls past it. (Desktop side-by-side height lives in the 900px block.) */
+  .pdf-canvas-wrap {
+    max-height: 72vh;
+  }
+  .pdf-preview .page-bar {
+    flex-wrap: wrap;
+    font-size: 12px;
+  }
+  .pdf-preview .page-bar button {
+    padding: 8px 12px;
+  }
+  .pdf-preview .page-bar .zoom .pct {
+    padding: 8px 10px;
+    min-width: 52px;
+  }
+  .export-btn {
+    padding: 8px 14px;
+  }
+  /* a touch more vertical room to tap a citation row */
+  .field-row {
+    padding-top: 12px;
+    padding-bottom: 12px;
+  }
 }
