@@ -40,13 +40,15 @@ export default async function ExtractionDetailPage({ params }: { params: Promise
       <section className="pt-10 pb-24">
         <div className="label mb-3">
           <Link href="/admin" className="subtle">
-            ← Admin
+            ← Admin • Contract Lens
           </Link>
         </div>
         <h1 className="text-3xl md:text-4xl font-bold tracking-tight">
           Unreadable extraction <span className="muted-2">#{String(row.id).slice(0, 8)}</span>
         </h1>
-        <p className="mt-4 muted text-base leading-relaxed">This row&rsquo;s stored JSON couldn&rsquo;t be parsed.</p>
+        <p className="mt-4 muted text-base leading-relaxed">
+          This row&rsquo;s stored JSON couldn&rsquo;t be parsed.
+        </p>
       </section>
     );
   }
@@ -55,7 +57,7 @@ export default async function ExtractionDetailPage({ params }: { params: Promise
     <section className="pt-10 pb-24">
       <div className="label mb-3">
         <Link href="/admin" className="subtle">
-          ← Admin
+          ← Admin • Contract Lens
         </Link>
       </div>
       <h1 className="text-3xl md:text-4xl font-bold tracking-tight">
@@ -69,7 +71,8 @@ export default async function ExtractionDetailPage({ params }: { params: Promise
         {row.trace_id ? (
           <>
             {' '}
-            <span className="muted-2">·</span> trace <span className="mono">{String(row.trace_id).slice(0, 12)}</span>
+            <span className="muted-2">·</span> trace{' '}
+            <span className="mono">{String(row.trace_id).slice(0, 12)}</span>
           </>
         ) : null}
       </p>
