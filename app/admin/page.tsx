@@ -9,7 +9,7 @@ import { summarize } from '@/ui/groups';
 // Turso creds at build). Gated by basic auth in proxy.ts.
 export const dynamic = 'force-dynamic';
 
-export const metadata: Metadata = { title: 'Admin · Lens · ZeroIndex' };
+export const metadata: Metadata = { title: 'Contract Lens Admin · ZeroIndex' };
 
 export default async function AdminPage() {
   const client = db();

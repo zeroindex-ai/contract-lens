@@ -7,7 +7,7 @@ import type { MatchQuality, VerifiedDocumentExtraction } from '@/lib/verify';
 import { bandFor } from '@/ui/confidence';
 
 export const dynamic = 'force-dynamic';
-export const metadata: Metadata = { title: 'Extraction · Admin · Lens · ZeroIndex' };
+export const metadata: Metadata = { title: 'Extraction · Contract Lens Admin · ZeroIndex' };
 
 function Conf({ confidence, matchQuality }: { confidence: number; matchQuality: MatchQuality }) {
   const band = bandFor(confidence);
