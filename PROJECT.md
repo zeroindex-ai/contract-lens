@@ -148,16 +148,15 @@ Upstream API errors (billing, rate limits, auth) are logged server-side and retu
 
 - **One open schema for all document types** — no per-type templates or user-defined field sets.
 - **Text-based PDFs only** — scans without embedded text are rejected.
-- **Per-IP daily rate limit** (configurable via `RATE_LIMIT_PER_DAY`, default 25) — atomic check-and-increment (single conditional UPSERT), but a failed attempt still consumes a slot because the increment precedes the guards.
+- **Per-IP daily rate limit** (configurable via `RATE_LIMIT_PER_DAY`, default 25) — atomic check-and-increment (single conditional UPSERT). The cheap guards (MIME / size / magic bytes) run *before* the increment, so a junk or oversized upload is rejected without consuming the visitor's daily slot; only requests that clear those guards reach the rate-limit counter.
 - **First call per schema is slow** (~20–30s) while strict mode compiles the schema; cached ~24h after.
-- **Basic auth only** on `/admin`; the admin view itself is a placeholder.
+- **Basic auth only** on `/admin` — single-owner gate, no user accounts. The admin view itself is a real submissions grid: the most recent extractions with their source, page count, model, detail counts, and verified/needs-review tallies, each row linking to a per-extraction detail page.
 
 ### v0.2 candidates
 
 - Per-item human override / correction.
 - An annotated source-PDF export (today's export is a styled Excel sheet + a compact PDF lookup sheet).
 - Cost metrics surfaced in the UI once token usage is exposed.
-- Move the rate-limit increment to *after* the cheap guards so a bad upload doesn't burn a slot.
 
 ### Shipped since v0.1
 
