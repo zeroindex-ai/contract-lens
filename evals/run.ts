@@ -3,7 +3,7 @@
 // and citation verification via @zeroindex-ai/eval-pack.
 //
 // Run (key piped from your secret store, never written to .env.local):
-//   ANTHROPIC_API_KEY="$(op read 'op://ZeroIndex LLC/contract-lens secrets/ANTHROPIC_API_KEY')" \
+//   ANTHROPIC_API_KEY="$(op read 'op://<vault>/<item>/ANTHROPIC_API_KEY')" \
 //     pnpm eval
 //
 //   pnpm eval cla            # one category
