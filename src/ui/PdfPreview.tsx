@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useRef, useState, type MouseEvent } from 'react';
-import { normalize } from '@/lib/match';
 import type { CitationMark } from './marks';
+import { buildSpanRanges, matchQuote } from './highlight';
 
 /**
  * Renders one page of a PDF to a canvas with a transparent pdfjs text layer
@@ -61,13 +61,6 @@ async function loadPdf(pdfUrl: string): Promise<any> {
 }
 /* eslint-enable @typescript-eslint/no-explicit-any */
 
-/** normalize() + strip ALL whitespace, so the match doesn't depend on where
- *  pdfjs happened to split text items (it splits mid-phrase, so any inserted
- *  separator would break a substring match). */
-function dense(s: string): string {
-  return normalize(s).replace(/\s+/g, '');
-}
-
 const HL_CLASSES = ['hl', 'hl-selected'];
 
 const ZOOM_MIN = 0.5;
@@ -94,33 +87,24 @@ function highlightMarks(
     delete (el as HTMLElement).dataset.markKey;
   });
 
-  const spans = Array.from(container.querySelectorAll('span')).filter((s) => s.childElementCount === 0);
-  let joined = '';
-  const ranges: { el: HTMLElement; start: number; end: number }[] = [];
-  for (const el of spans) {
-    const t = dense(el.textContent ?? '');
-    if (!t) continue;
-    const start = joined.length;
-    joined += t;
-    ranges.push({ el: el as HTMLElement, start, end: joined.length });
-  }
+  const spans = Array.from(container.querySelectorAll('span')).filter(
+    (s) => s.childElementCount === 0
+  ) as HTMLElement[];
+  const { joined, ranges } = buildSpanRanges(spans.map((el) => el.textContent ?? ''));
 
   let firstSelected: HTMLElement | null = null;
   for (const mark of marks) {
-    const q = dense(mark.quote);
-    if (!q) continue;
-    const idx = joined.indexOf(q);
-    if (idx < 0) continue;
-    const qEnd = idx + q.length;
+    const { spanIndices } = matchQuote(mark.quote, joined, ranges);
+    if (spanIndices.length === 0) continue;
     const isSelected = mark.key === selectedKey;
-    for (const r of ranges) {
-      if (r.start < qEnd && r.end > idx) {
-        r.el.classList.add('hl');
-        r.el.dataset.markKey = mark.key;
-        if (isSelected) {
-          r.el.classList.add('hl-selected');
-          if (!firstSelected) firstSelected = r.el;
-        }
+    for (const idx of spanIndices) {
+      const el = spans[idx];
+      if (!el) continue;
+      el.classList.add('hl');
+      el.dataset.markKey = mark.key;
+      if (isSelected) {
+        el.classList.add('hl-selected');
+        if (!firstSelected) firstSelected = el;
       }
     }
   }
