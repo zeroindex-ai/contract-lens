@@ -33,7 +33,7 @@ vi.mock('@/db/client', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/db/client')>();
   return { ...actual, db: () => hoisted.client! };
 });
-vi.mock('@/lib/persist', () => ({ persistExtraction: vi.fn(async () => 1) }));
+vi.mock('@/lib/persist', () => ({ persistExtraction: vi.fn(async () => 'ext_test_persisted_id') }));
 vi.mock('@/lib/log-extract', () => ({ logExtract: vi.fn() }));
 vi.mock('@/lib/extract', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/lib/extract')>();

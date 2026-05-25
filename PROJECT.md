@@ -151,6 +151,7 @@ Upstream API errors (billing, rate limits, auth) are logged server-side and retu
 - **Per-IP daily rate limit** (configurable via `RATE_LIMIT_PER_DAY`, default 25) — atomic check-and-increment (single conditional UPSERT). The cheap guards (MIME / size / magic bytes) run *before* the increment, so a junk or oversized upload is rejected without consuming the visitor's daily slot; only requests that clear those guards reach the rate-limit counter.
 - **First call per schema is slow** (~20–30s) while strict mode compiles the schema; cached ~24h after.
 - **Basic auth only** on `/admin` — single-owner gate, no user accounts. The admin view itself is a real submissions grid: the most recent extractions with their source, page count, model, detail counts, and verified/needs-review tallies, each row linking to a per-extraction detail page.
+- **PDF highlighting matches the first occurrence of a quote** — the source-PDF citation highlighter locates each `evidence_quote` by finding its first match in the page's concatenated (dense-normalized) text (`joined.indexOf(q)` in `PdfPreview.tsx`). If the same snippet appears more than once on a page — e.g. a party name or a boilerplate phrase repeated in the body and a signature block — only the first occurrence is highlighted, even when the citation logically points at a later instance. The verification status (which drives the side panel and the verified/needs-review tallies) is unaffected; this is purely a visual-placement limitation of where the on-page highlight lands.
 
 ### v0.2 candidates
 
