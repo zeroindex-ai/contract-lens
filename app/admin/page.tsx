@@ -41,8 +41,8 @@ export default async function AdminPage() {
 
   return (
     <section className="pt-10 pb-24">
-      <div className="label mb-3">Admin</div>
-      <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Lens</h1>
+      <div className="label mb-3">Admin • Contract Lens</div>
+      <h1 className="text-3xl md:text-4xl font-bold tracking-tight">Extractions</h1>
 
       <div className="card mt-8">
         <div className="table-scroll">
