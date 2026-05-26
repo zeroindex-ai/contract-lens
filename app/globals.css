@@ -820,19 +820,22 @@ body {
   /* Fill the ink band, not the whole span. pdfjs sizes each span to the full em
      box (taller than the visible text) and anchors its TOP at the glyph top, so a
      full-box fill spills into the leading gap below (reading as ~1.5 lines). Trim
-     to a top-anchored 70% band so it hugs cap-height→baseline.
+     to a top-anchored 75% band so it hugs cap-height→baseline.
 
      The band is encoded in the GRADIENT'S COLOR STOPS, not background-size: a
      percentage `background-size` height is resolved inconsistently by iOS WebKit
      on auto-height spans (the trim silently didn't apply on iPhone — full-box fill
      — while desktop honored it). Color stops resolve against the gradient line
-     (the box height) consistently across engines, so the 70% band renders the same
-     on laptop and phone. No border-radius (a fixed 2px lozenges a small band). */
+     (the box height) consistently across engines, so the band renders the same
+     on laptop and phone. No border-radius (a fixed 2px lozenges a small band).
+     NOTE: the band is a fixed % of the (currently non-scaling) text-layer span box,
+     so it only hugs at the default zoom and reads tall at mobile's small fit-to-width
+     scale — proper per-zoom scaling is a tracked TODO. */
   background-image: linear-gradient(
     to bottom,
     rgba(253, 224, 71, 0.34) 0,
-    rgba(253, 224, 71, 0.34) 70%,
-    transparent 70%
+    rgba(253, 224, 71, 0.34) 75%,
+    transparent 75%
   );
   cursor: pointer;
   pointer-events: auto;
@@ -840,13 +843,13 @@ body {
 /* The currently-selected citation is distinguished by a different fill color
    (on-brand violet) rather than a border — a ring with any offset bleeds into
    the lines above/below on tightly-spaced text. Declared after .hl so it wins.
-   Same top-anchored 70% band, violet fill. */
+   Same top-anchored 75% band, violet fill. */
 .textLayer span.hl-selected {
   background-image: linear-gradient(
     to bottom,
     rgba(124, 58, 237, 0.32) 0,
-    rgba(124, 58, 237, 0.32) 70%,
-    transparent 70%
+    rgba(124, 58, 237, 0.32) 75%,
+    transparent 75%
   );
 }
 .pdf-quote {
