@@ -826,7 +826,9 @@ body {
   background-image: linear-gradient(rgba(253, 224, 71, 0.34), rgba(253, 224, 71, 0.34));
   background-repeat: no-repeat;
   background-size: 100% 70%;
-  border-radius: 2px;
+  /* No border-radius: it's a fixed 2px, which is imperceptible on a desktop-scale
+     band (~10px) but rounds a phone-scale band (~5px, fit-to-width) into a lozenge
+     — same CSS, scale-dependent look. Square edges read consistently at any zoom. */
   cursor: pointer;
   pointer-events: auto;
 }
