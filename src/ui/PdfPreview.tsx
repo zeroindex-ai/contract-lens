@@ -153,12 +153,15 @@ export function PdfPreview({ pdfUrl, page, marks, selectedKey, onSelectMark, hin
     if (!pdfUrl || shownPage === null) return;
 
     (async () => {
+      let step = 'load-pdfjs';
       try {
         const pdfjs = await getPdfjs();
+        step = 'load-document';
         const doc = await loadPdf(pdfUrl);
         if (cancelled) return;
         setPageCount(doc.numPages);
 
+        step = 'get-page';
         const targetPage = Math.max(1, Math.min(shownPage, doc.numPages));
         const pageObj = await doc.getPage(targetPage);
         if (cancelled) return;
@@ -188,16 +191,19 @@ export function PdfPreview({ pdfUrl, page, marks, selectedKey, onSelectMark, hin
         const ctx = canvas.getContext('2d');
         if (!ctx) return;
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        step = 'render-canvas';
         await pageObj.render({ canvasContext: ctx, viewport }).promise;
         if (cancelled) return;
 
         // ── transparent text layer overlay, same dimensions + scale ──
+        step = 'get-text-content';
         textLayerDiv.replaceChildren();
         textLayerDiv.style.width = `${Math.floor(viewport.width)}px`;
         textLayerDiv.style.height = `${Math.floor(viewport.height)}px`;
         textLayerDiv.style.setProperty('--scale-factor', String(scale));
         const textContent = await pageObj.getTextContent();
         if (cancelled) return;
+        step = 'text-layer-render';
         const textLayer = new pdfjs.TextLayer({
           textContentSource: textContent,
           container: textLayerDiv,
@@ -206,6 +212,7 @@ export function PdfPreview({ pdfUrl, page, marks, selectedKey, onSelectMark, hin
         await textLayer.render();
         if (cancelled) return;
 
+        step = 'highlight';
         const onThisPage = marks.filter((m) => m.page === targetPage);
         const firstHl = highlightMarks(textLayerDiv, onThisPage, selectedKey);
         if (firstHl && wrapRef.current) {
@@ -217,7 +224,11 @@ export function PdfPreview({ pdfUrl, page, marks, selectedKey, onSelectMark, hin
         setError(null);
       } catch (err) {
         if (cancelled) return;
-        setError(err instanceof Error ? err.message : 'Failed to render PDF page');
+        // Name the failing step + error type so a hard-to-reproduce mobile failure
+        // (e.g. an engine-missing API) reports exactly where it broke.
+        const detail = err instanceof Error ? `${err.name}: ${err.message}` : 'Failed to render PDF page';
+        setError(`PDF render failed at [${step}] — ${detail}`);
+        console.error(`[PdfPreview] step=${step}`, err);
       }
     })();
 
