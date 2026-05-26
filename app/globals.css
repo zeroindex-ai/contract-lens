@@ -817,15 +817,15 @@ body {
    the canvas because the text layer is its own stacking context (z-index), so
    we use alpha instead. */
 .textLayer span.hl {
-  /* Fill only a centered band, not the whole span. pdfjs sizes each span to the
-     full em box, which runs taller than the visible ink — a full-box fill reads
-     as ~1.5 lines on a single-line citation and bleeds into the line above/below
-     (so adjacent citations' fills overlap). A centered background band of ~70%
-     hugs the text and keeps neighbors from touching. Tune the 70% if needed. */
+  /* Fill the ink band, not the whole span. pdfjs sizes each span to the full em
+     box (taller than the visible text) and anchors its TOP at the glyph top, so a
+     full-box fill is correctly top-aligned but spills down into the leading gap —
+     reading as ~1.5 lines and bleeding toward the next line. Anchor at top and
+     trim the bottom so it hugs cap-height→baseline. Tune the height % if needed. */
   background-image: linear-gradient(rgba(253, 224, 71, 0.34), rgba(253, 224, 71, 0.34));
   background-repeat: no-repeat;
-  background-position: center;
-  background-size: 100% 70%;
+  background-position: top;
+  background-size: 100% 78%;
   border-radius: 2px;
   cursor: pointer;
   pointer-events: auto;
