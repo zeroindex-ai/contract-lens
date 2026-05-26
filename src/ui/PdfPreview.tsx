@@ -200,7 +200,13 @@ export function PdfPreview({ pdfUrl, page, marks, selectedKey, onSelectMark, hin
         textLayerDiv.replaceChildren();
         textLayerDiv.style.width = `${Math.floor(viewport.width)}px`;
         textLayerDiv.style.height = `${Math.floor(viewport.height)}px`;
+        // pdfjs v5 scales each span's font-size via `calc(Npx * var(--total-scale-factor))`.
+        // Set BOTH: --total-scale-factor is the one v5 reads (a bare --scale-factor leaves
+        // it undefined → the calc fails → spans render at a fixed, non-scaling font-size,
+        // so the text layer/highlights don't track the canvas text across zoom). --scale-factor
+        // is kept for older pdfjs paths.
         textLayerDiv.style.setProperty('--scale-factor', String(scale));
+        textLayerDiv.style.setProperty('--total-scale-factor', String(scale));
         const textContent = await pageObj.getTextContent();
         if (cancelled) return;
         step = 'text-layer-render';
