@@ -817,16 +817,25 @@ body {
    the canvas because the text layer is its own stacking context (z-index), so
    we use alpha instead. */
 .textLayer span.hl {
-  background: rgba(253, 224, 71, 0.24);
+  /* Fill only a centered band, not the whole span. pdfjs sizes each span to the
+     full em box, which runs taller than the visible ink — a full-box fill reads
+     as ~1.5 lines on a single-line citation and bleeds into the line above/below
+     (so adjacent citations' fills overlap). A centered background band of ~70%
+     hugs the text and keeps neighbors from touching. Tune the 70% if needed. */
+  background-image: linear-gradient(rgba(253, 224, 71, 0.34), rgba(253, 224, 71, 0.34));
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100% 70%;
   border-radius: 2px;
   cursor: pointer;
   pointer-events: auto;
 }
 /* The currently-selected citation is distinguished by a different fill color
    (on-brand violet) rather than a border — a ring with any offset bleeds into
-   the lines above/below on tightly-spaced text. Declared after .hl so it wins. */
+   the lines above/below on tightly-spaced text. Declared after .hl so it wins.
+   Only the fill color changes; the band size/position carry over from .hl. */
 .textLayer span.hl-selected {
-  background: rgba(124, 58, 237, 0.26);
+  background-image: linear-gradient(rgba(124, 58, 237, 0.32), rgba(124, 58, 237, 0.32));
 }
 .pdf-quote {
   margin-top: 12px;
