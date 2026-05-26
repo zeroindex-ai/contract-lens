@@ -74,9 +74,13 @@ Load-bearing decisions, documented because the *why* often outlasts the *what*.
 ```
  Browser ──upload──▶ POST /api/extract (Next.js route, Node runtime on Vercel)
                        │
+                       ├─ cheap guards: MIME · magic bytes · ≤15 MB
+                       │                    (free → run BEFORE the increment, so junk
+                       │                     uploads don't burn the visitor's daily slot)
                        ├─ rate limit (per-IP-bucket daily counter, Turso)
-                       ├─ guards: MIME · magic bytes · ≤15 MB · ≤50 pages · has-text
                        ├─ extractPdfText()  ── unpdf → per-page text + page count
+                       ├─ parse guards: ≤50 pages · has-text
+                       │                    (need the unpdf parse → run AFTER the increment)
                        ├─ extract()         ── Anthropic Messages: base64 PDF +
                        │                        forced strict tool_use → Zod-validated
                        ├─ verify()          ── match each evidence_quote vs page text
