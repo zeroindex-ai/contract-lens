@@ -1,5 +1,6 @@
 'use client';
 
+import './pdf-polyfills'; // Promise.withResolvers for iOS Safari < 17.4 — must load before pdfjs
 import { useEffect, useRef, useState, type MouseEvent } from 'react';
 import type { CitationMark } from './marks';
 import { buildSpanRanges, matchQuote } from './highlight';
