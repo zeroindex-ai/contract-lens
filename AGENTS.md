@@ -73,7 +73,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
   core check) in PROJECT.md.
 - **Model picks are deliberate and documented** in PROJECT.md's decision log — pick by
   eval, not vibe. Claude Sonnet 4.6 via forced `strict` `tool_use`; override with
-  `ANTHROPIC_MODEL`. Prompt caching where it helps ([[claude-api]]).
+  `ANTHROPIC_MODEL`. Prompt caching where it helps.
 - **Cited output must be escaped** — HTML-escape any model text rendered to the page
   (five-entity coverage). Citations resolve to real source pages before display, and
   each `evidence_quote` is deterministically verified against the PDF text.
