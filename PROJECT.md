@@ -1,5 +1,6 @@
 # contract-lens — Project Documentation
 
+> **Phase:** Production
 > **Status: shipped v0.1** — live at [lens.zeroindex.ai](https://lens.zeroindex.ai). Upload any official document (or open a sample) and get a structured, cited reference back — the document type, a summary, the parties, and the meaningful details — each anchored to and **verified** against the source page.
 
 This document captures the scope, strategic decisions, architecture, public contracts, and known constraints for `contract-lens`. It exists to onboard a future collaborator (or future-you in a clean session) and to record the *reasoning* behind decisions, not just the decisions themselves.
